@@ -6,12 +6,7 @@
 #define CS430_PROJ1_IMAGES_HELPERS_H
 
 #include <stdio.h>
-
-typedef struct {
-    double r, g, b;
-} Color;
-
-typedef Color* ColorRef;
+#include "image.h";
 
 /**
  * Peeks the next character in the provided stream
