@@ -6,7 +6,7 @@
 #define CS430_PROJ1_IMAGES_PPM_HEADER_H
 
 #include <stdio.h>
-#include "image.h";
+#include "image.h"
 
 /**
  * Reads ppm header information from the provided file pointer, and writes the data into the

@@ -6,7 +6,7 @@
 #define CS430_PROJ1_IMAGES_HELPERS_H
 
 #include <stdio.h>
-#include "image.h";
+#include "image.h"
 
 /**
  * Peeks the next character in the provided stream

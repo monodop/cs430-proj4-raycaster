@@ -5,7 +5,7 @@
 #ifndef CS430_PROJ1_IMAGES_PPM_H
 #define CS430_PROJ1_IMAGES_PPM_H
 
-#include "image.h";
+#include "image.h"
 
 int ppm_read(char* filename, PpmImageRef image);
 int ppm_write(char* filename, PpmImageRef image);

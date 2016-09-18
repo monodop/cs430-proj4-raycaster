@@ -3,9 +3,10 @@
 #include <errno.h>
 
 #include "../headers/ppm_header.h"
-#include "../headers/helpers.h"
+#include "../headers/ppm.h"
 #include "../headers/ppm3.h"
 #include "../headers/ppm6.h"
+#include "../headers/image.h"
 
 /**
  * Displays the usage information and returns an error exit code
@@ -13,54 +14,33 @@
  */
 int displayUsage();
 
-int main(int argc, char* argv[]) {
+int ppm_read(char* filename, PpmImageRef image) {
 
-    /* - - - - - - Setup - - - - - - */
-
-    int targetFormat;
-    char* inputFilename;
-    char* outputFilename;
-    FILE *filePointer;
-    PpmHeader fileHeader;
+    FILE* filePointer;
+    PpmHeaderRef fileHeader = &(image->header);
     ColorRef pixelGrid;
-
-    // Validate argument count
-    if (argc != 4)
-        return displayUsage();
-
-    // Validate target format parameter
-    targetFormat = atoi(argv[1]);
-    if (targetFormat != 3 && targetFormat != 6) {
-        fprintf(stderr, "Error: Invalid parameter target_format = '%s', expected 3 or 6.\n", argv[1]);
-        return displayUsage();
-    }
-
-    inputFilename = argv[2];
-    outputFilename = argv[3];
-
-    /* - - - - - - Read Data - - - - - - */
 
     // Open input file
     printf("Processing input file.\n");
-    filePointer = fopen(inputFilename, "r");
+    filePointer = fopen(filename, "r");
     if (filePointer == NULL) {
-        fprintf(stderr, "Error: File '%s' does not exist or cannot be opened. Error number %d.\n", inputFilename, errno);
+        fprintf(stderr, "Error: File '%s' does not exist or cannot be opened. Error number %d.\n", filename, errno);
         return displayUsage();
     }
 
     // Read input image file's headers
-    if (!header_read(filePointer, &fileHeader)) {
+    if (!header_read(filePointer, fileHeader)) {
         fprintf(stderr, "Error: Unable to continue processing image file.\n");
         return displayUsage();
     }
     printf("Detected file with dimensions %u x %u of type P%d, maxval=%hu.\n",
-           fileHeader.imageWidth,
-           fileHeader.imageHeight,
-           fileHeader.ppmType,
-           fileHeader.maxVal);
+           fileHeader->imageWidth,
+           fileHeader->imageHeight,
+           fileHeader->ppmType,
+           fileHeader->maxVal);
 
     // Create the pixel grid in memory
-    pixelGrid = malloc(sizeof(Color) * fileHeader.imageWidth * fileHeader.imageHeight);
+    pixelGrid = malloc(sizeof(Color) * fileHeader->imageWidth * fileHeader->imageHeight);
     if (pixelGrid == NULL) {
         // Unable to allocate the correct amount of memory.
         fprintf(stderr, "Error: Unable to allocate enough memory to read the image file. Cannot proceed.\n");
@@ -68,15 +48,15 @@ int main(int argc, char* argv[]) {
     }
 
     // Read the data into the grid
-    switch (fileHeader.ppmType) {
+    switch (fileHeader->ppmType) {
         case 3:
-            if (!ppm3_parse_data(filePointer, &fileHeader, pixelGrid)) {
+            if (!ppm3_parse_data(filePointer, fileHeader, pixelGrid)) {
                 fprintf(stderr, "Error: Unable to continue reading the image file.\n");
                 return displayUsage();
             }
             break;
         case 6:
-            if (!ppm6_parse_data(filePointer, &fileHeader, pixelGrid)) {
+            if (!ppm6_parse_data(filePointer, fileHeader, pixelGrid)) {
                 fprintf(stderr, "Error: Unable to continue reading the image file.\n");
                 return displayUsage();
             }
@@ -95,33 +75,43 @@ int main(int argc, char* argv[]) {
     fclose(filePointer);
     printf("Input file processed.\n");
 
-    /* - - - - - - Write Data - - - - - - */
+    // Update the image's pixel grid
+    free(image->pixels);
+    image->pixels = pixelGrid;
+
+    return 1;
+}
+
+int ppm_write(char* filename, PpmImageRef image) {
+
+    FILE* filePointer;
+    PpmHeaderRef fileHeader = &(image->header);
+    ColorRef pixelGrid = image->pixels;
 
     // Open / Clear output file
     printf("Opening output file for writing.\n");
-    filePointer = fopen(outputFilename, "w+");
+    filePointer = fopen(filename, "w+");
     if (filePointer == NULL) {
-        fprintf(stderr, "Error: File '%s' cannot be opened for writing. Error number %d.\n", outputFilename, errno);
+        fprintf(stderr, "Error: File '%s' cannot be opened for writing. Error number %d.\n", filename, errno);
         return displayUsage();
     }
 
     // Write output image file's headers
-    fileHeader.ppmType = (char)targetFormat;
-    if (!header_write(filePointer, &fileHeader)) {
+    if (!header_write(filePointer, fileHeader)) {
         fprintf(stderr, "Error: Unable to write to image file. Operation aborted.\n");
         return displayUsage();
     }
 
     // Write the data in the grid to the file
-    switch (targetFormat) {
+    switch (fileHeader->ppmType) {
         case 3:
-            if (!ppm3_write_data(filePointer, &fileHeader, pixelGrid)) {
+            if (!ppm3_write_data(filePointer, fileHeader, pixelGrid)) {
                 fprintf(stderr, "Error: Unable to continue writing the image file.\n");
                 return displayUsage();
             }
             break;
         case 6:
-            if (!ppm6_write_data(filePointer, &fileHeader, pixelGrid)) {
+            if (!ppm6_write_data(filePointer, fileHeader, pixelGrid)) {
                 fprintf(stderr, "Error: Unable to continue writing the image file.\n");
                 return displayUsage();
             }
@@ -131,12 +121,43 @@ int main(int argc, char* argv[]) {
             return displayUsage();
     }
 
-    // Deallocate the pixel grid
-    free(pixelGrid);
-
     // Close output file
     fclose(filePointer);
     printf("Output file processed.\n");
+
+}
+
+int main(int argc, char* argv[]) {
+
+    /* - - - - - - Setup - - - - - - */
+
+    int targetFormat;
+    char* inputFilename;
+    char* outputFilename;
+    PpmImage image;
+
+    // Validate argument count
+    if (argc != 4)
+        return displayUsage();
+
+    // Validate target format parameter
+    targetFormat = atoi(argv[1]);
+    if (targetFormat != 3 && targetFormat != 6) {
+        fprintf(stderr, "Error: Invalid parameter target_format = '%s', expected 3 or 6.\n", argv[1]);
+        return displayUsage();
+    }
+
+    inputFilename = argv[2];
+    outputFilename = argv[3];
+
+    /* - - - - - - Read Data - - - - - - */
+
+    ppm_read(inputFilename, &image);
+
+    /* - - - - - - Write Data - - - - - - */
+
+    image.header.ppmType = (char)targetFormat;
+    ppm_write(outputFilename, &image);
 
     return 0;
 }
