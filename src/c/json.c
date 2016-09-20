@@ -159,6 +159,100 @@ int json_parse_array(FILE* filePointer, JsonElementRef root) {
     // Copy the elements to the root element
     root->data.dataElements = elements;
     root->count = count;
+    root->type = JSON_ARRAY;
+
+    return 1;
+}
+
+/**
+ * Parses the remaining element as if it is an object.
+ * @param filePointer - The file to read the data from
+ * @param root - The element to save the data to
+ * @return 1 if success, 0 if failure
+ */
+int json_parse_object(FILE* filePointer, JsonElementRef root) {
+    int c, oldSize, size, count;
+    JsonElementRef elements, elements2;
+    char* key;
+    char** keys;
+    char** keys2;
+
+    // Allocate the initial array
+    count = 0;
+    size = 4;
+    // TODO: check malloc for null return
+    elements = malloc(sizeof(JsonElement) * size);
+    keys = malloc(sizeof(char*) * size);
+
+    // Iterate until right curly bracket
+    while (1) {
+        skip_whitespace(filePointer);
+        c = getc(filePointer);
+        if (c == '}') {
+            // Right bracket - end loop
+            break;
+        } else if (c == EOF) {
+            // Error
+            fprintf(stderr, "Error: Unexpected EOF. Unable to proceed parsing json file.\n");
+            return 0;
+        } else if (c == '"') {
+            // Try to read a string
+            json_read_string(filePointer, &key);
+            skip_whitespace(filePointer);
+            c = getc(filePointer);
+            if (c != ':') {
+                // Error
+                fprintf(stderr, "Error: Expected ':', got '%c'. Cannot proceed.\n", c);
+                return 0;
+            }
+            skip_whitespace(filePointer);
+            // Try to read in the next element
+            json_parse(filePointer, elements + count);
+            keys[count] = key;
+            count++;
+            // Look for comma
+            skip_whitespace(filePointer);
+            c = getc(filePointer);
+            if (c == '}') {
+                // Rick bracket - end loop
+                break;
+            }
+            if (c != ',') {
+                // Error
+                fprintf(stderr, "Error: Expected ',' or '}', got '%c'. Cannot proceed.\n", c);
+                return 0;
+            }
+        } else {
+            // Error
+            fprintf(stderr, "Error: Expected string key, got '%c'.\n", c);
+            return 0;
+        }
+
+        // Check if we need more memory
+        if (count >= size-1) {
+            oldSize = size;
+            size *= 2;
+
+            // Allocate new arrays
+            // TODO: check malloc for null return
+            elements2 = malloc(sizeof(JsonElement) * size);
+            keys2 = malloc(sizeof(char*) * size);
+
+            // Copy the old string to its new address and free the old string
+            memcpy(elements2, elements, (size_t)(oldSize));
+            memcpy(keys2, keys, (size_t)(oldSize));
+            free(elements);
+            free(keys);
+            elements = elements2;
+            keys = keys2;
+        }
+    }
+
+    // Copy the elements to the root element
+    root->data.dataElements = elements;
+    root->keys = keys;
+    root->count = count;
+    root->type = JSON_OBJECT;
 
     return 1;
 }
@@ -170,14 +264,14 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
     c = getc(filePointer);
     if (c == '{') {
         // Object
-        skip_whitespace(filePointer);
+        json_parse_object(filePointer, root);
     } else if (c == '[') {
         // Array
         json_parse_array(filePointer, root);
     } else if (c == '"') {
         // String
         json_parse_string(filePointer, root);
-    } else if (c >= '0' && c <= '9') {
+    } else if ( (c >= '0' && c <= '9') || c == '-' ) {
         // Number
         ungetc(c, filePointer);
         json_parse_number(filePointer, root);
