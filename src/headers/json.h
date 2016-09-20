@@ -37,6 +37,7 @@ typedef struct _JsonElement {
         char    dataNull;
         struct _JsonElement* dataElements;
     } data;
+    int   count;
     char* keys;
 } JsonElement;
 typedef JsonElement* JsonElementRef;
