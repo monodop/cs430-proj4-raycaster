@@ -76,7 +76,21 @@ int json_read_string(FILE* filePointer, char** string) {
  */
 int json_parse_string(FILE* filePointer, JsonElementRef root) {
     root->type = JSON_STRING;
+    // TODO: Check failure
     json_read_string(filePointer, &(root->data.dataString));
+    return 1;
+}
+
+/**
+ * Parses an element as if it is a number.
+ * @param filePointer - The file to read the data from
+ * @param root - The element to save the data to
+ * @return 1 if success, 0 if failure
+ */
+int json_parse_number(FILE* filePointer, JsonElementRef root) {
+    root->type = JSON_NUMBER;
+    // TODO: Check failure
+    fscanf(filePointer, "%lf", &(root->data.dataNumber));
     return 1;
 }
 
@@ -96,6 +110,8 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
         json_parse_string(filePointer, root);
     } else if (c >= '0' && c <= '9') {
         // Number
+        ungetc(c, filePointer);
+        json_parse_number(filePointer, root);
     } else if (c == 't') {
         // True?
     } else if (c == 'f') {
