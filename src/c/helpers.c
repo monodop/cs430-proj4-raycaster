@@ -46,6 +46,20 @@ int skip_ignored_characters(FILE* fp) {
     return count;
 }
 
+int skip_whitespace(FILE* fp) {
+    int c, count = 0;
+    while (1) {
+        c = peek(fp);
+        if (isspace(c)) {
+            getc(fp);
+            count++;
+        } else {
+            break;
+        }
+    }
+    return count;
+}
+
 int wxy_to_index(int width, int x, int y) {
     return x + y*width;
 }

@@ -23,6 +23,13 @@ int peek(FILE* fp);
 int skip_ignored_characters(FILE* fp);
 
 /**
+ * Scans over whitespace in the provided file stream
+ * @param fp - The file being read
+ * @return the total number of characters skipped
+ */
+int skip_whitespace(FILE* fp);
+
+/**
  * Converts a width, x, and y coordinate to an index in a 1D array
  * @param width - the width of the grid
  * @param x - the x coordinate

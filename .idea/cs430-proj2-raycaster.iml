@@ -7,8 +7,10 @@
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/image.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/json.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm3.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/main.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />
