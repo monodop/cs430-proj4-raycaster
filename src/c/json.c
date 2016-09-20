@@ -277,10 +277,56 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
         json_parse_number(filePointer, root);
     } else if (c == 't') {
         // True?
+        if (getc(filePointer) != 'r') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'u') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'e') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        root->type = JSON_BOOLEAN;
+        root->data.dataBool = true;
     } else if (c == 'f') {
         // False?
+        if (getc(filePointer) != 'a') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'l') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 's') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'e') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        root->type = JSON_BOOLEAN;
+        root->data.dataBool = false;
     } else if (c == 'n') {
         // Null?
+        if (getc(filePointer) != 'u') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'l') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        if (getc(filePointer) != 'l') {
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            return 0;
+        }
+        root->type = JSON_NULL;
+        root->data.dataNull = 0;
     } else if (c == EOF) {
         // Crap!
         return 0;
