@@ -20,11 +20,11 @@ typedef struct {
 } Ray;
 typedef Ray* RayRef;
 
-inline double vec_mag(Vector a) {
+static inline double vec_mag(Vector a) {
     return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
 }
 
-inline Vector vec_add(Vector a, Vector b) {
+static inline Vector vec_add(Vector a, Vector b) {
     return (Vector) {
             .x = a.x + b.x,
             .y = a.y + b.y,
@@ -32,7 +32,7 @@ inline Vector vec_add(Vector a, Vector b) {
     };
 }
 
-inline Vector vec_sub(Vector a, Vector b) {
+static inline Vector vec_sub(Vector a, Vector b) {
     return (Vector) {
             .x = a.x - b.x,
             .y = a.y - b.y,
@@ -40,7 +40,7 @@ inline Vector vec_sub(Vector a, Vector b) {
     };
 }
 
-inline Vector vec_scale(Vector a, double scale) {
+static inline Vector vec_scale(Vector a, double scale) {
     return (Vector) {
             .x = a.x * scale,
             .y = a.y * scale,
@@ -48,24 +48,24 @@ inline Vector vec_scale(Vector a, double scale) {
     };
 }
 
-inline Vector vec_unit(Vector a) {
+static inline Vector vec_unit(Vector a) {
     return vec_scale(a, 1.0 / vec_mag(a));
 }
 
-inline double vec_dot(Vector a, Vector b) {
+static inline double vec_dot(Vector a, Vector b) {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-inline double vec_angle(Vector a, Vector b) {
+static inline double vec_angle(Vector a, Vector b) {
     return acos(vec_dot(a, b));
 }
 
-inline Vector vec_project(Vector a, Vector b) {
+static inline Vector vec_project(Vector a, Vector b) {
     Vector ua = vec_unit(a);
     return vec_scale(ua, vec_dot(ua, b));
 }
 
-inline Vector vec_cross(Vector a, Vector b) {
+static inline Vector vec_cross(Vector a, Vector b) {
     return (Vector) {
             .x = a.y*b.z - a.z*b.y,
             .y = a.z*b.x - a.x*b.z,
