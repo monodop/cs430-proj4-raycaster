@@ -38,6 +38,34 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     return;
 }
 
+void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRef hitOut, double* distanceOut) {
+    Vector u_pn = vec_unit(plane_normal);
+    double vd = vec_dot(u_pn, ray.dir);
+
+    // Perpendicular - no intersection
+    if (fabs(vd) < 0.0001) {
+        (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
+        (*distanceOut) = INFINITY;
+        return;
+    }
+
+    // We can check if vd > 0, meaning the normal is pointing away from the ray, but in this case
+    // it probably doesn't matter
+
+    double t = vec_dot(vec_sub(plane_center, ray.pos), u_pn) / vd;
+
+    // Intersect behind origin
+    if (t < 0.0) {
+        (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
+        (*distanceOut) = INFINITY;
+        return;
+    }
+
+    (*hitOut) = vec_add(ray.pos, vec_scale(ray.dir, t));
+    (*distanceOut) = t;
+    return;
+}
+
 int raycast_image(PpmImageRef image, SceneRef scene) {
 
     Vector vp_center = { .x = 0, .y = 0, .z = 1 };
@@ -97,6 +125,13 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosi
                     bestHitObject = &(scene->objects[i]);
                 }
                 break;
+            case SCENE_OBJECT_PLANE:
+                plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestHit = hit;
+                    bestHitObject = &(scene->objects[i]);
+                }
             default:
                 // Don't check anything else
                 break;
