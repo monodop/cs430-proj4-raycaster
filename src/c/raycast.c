@@ -14,6 +14,7 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     c = diff.x*diff.x + diff.y*diff.y + diff.z*diff.z - sphere_radius*sphere_radius;
     disc = b*b - 4*c;
 
+    // No intersection
     if (disc < 0.0) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
@@ -24,6 +25,13 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     t = (-b - disc) / 2.0;
     if (t < 0.0)
         t = (-b + disc) / 2.0;
+
+    // No intersection
+    if (t < 0.0) {
+        (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
+        (*distanceOut) = INFINITY;
+        return;
+    }
 
     (*hitOut) = vec_add(ray.pos, vec_scale(ray.dir, t));
     (*distanceOut) = t;
