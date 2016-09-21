@@ -53,7 +53,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     JsonElementRef currentElement, subElement;
     SceneObject currentObject;
-    int i;
+    int i, o_i;
     char* type;
     bool cameraFound = false;
 
@@ -65,7 +65,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
     sceneOut->objectCount = jsonRoot->count - 1;
     sceneOut->objects = malloc(sizeof(SceneObject) * sceneOut->objectCount);
 
-    for (i = 0; i < jsonRoot->count; i++) {
+    for (i = 0, o_i = 0; i < jsonRoot->count; i++) {
 
         json_index(jsonRoot, i, &currentElement);
         if (currentElement->type != JSON_OBJECT) {
@@ -152,7 +152,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             return 0;
         }
 
-        sceneOut->objects[i] = currentObject;
+        sceneOut->objects[o_i++] = currentObject;
     }
 
     if (!cameraFound) {
