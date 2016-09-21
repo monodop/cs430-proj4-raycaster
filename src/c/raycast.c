@@ -38,8 +38,8 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
     int img_width = image->header.imageWidth;
     int img_height = image->header.imageHeight;
 
-    double pix_width = vp_width / (float)img_width;
-    double pix_height = vp_height / (float)img_height;
+    double pix_width = vp_width / (double)img_width;
+    double pix_height = vp_height / (double)img_height;
 
     Vector point, hitPos;
     Ray ray;
@@ -50,8 +50,8 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
         for (int x = 0; x < img_width; x++ ) {
 
             point.x = vp_center.x - vp_width/2.0 + pix_width * (x + 0.5);
-            point.y = vp_center.y - vp_height/2.0 + pix_height * (y + 0.5);
-            point.z = -vp_center.z;
+            point.y = -(vp_center.y - vp_height/2.0 + pix_height * (y + 0.5));
+            point.z = vp_center.z;
 
             ray.pos = (Vector) { .x = 0, .y = 0, .z = 0 };
             ray.dir = vec_unit(point);
