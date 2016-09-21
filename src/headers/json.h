@@ -110,4 +110,76 @@ int json_as_int(JsonElementRef element, int* intOut);
  */
 int json_as_bool(JsonElementRef element, bool* boolOut);
 
+/**
+ * Shortcut for calling json_index and then json_as_string.
+ * @param element - The element to query
+ * @param index - The index of the element to get
+ * @param stringOut - The place where the string result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_index_as_string(JsonElementRef element, int index, char** stringOut);
+
+/**
+ * Shortcut for calling json_index and then json_as_double.
+ * @param element - The element to query
+ * @param index - The index of the element to get
+ * @param stringOut - The place where the double result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_index_as_double(JsonElementRef element, int index, double* doubleOut);
+
+/**
+ * Shortcut for calling json_index and then json_as_int.
+ * @param element - The element to query
+ * @param index - The index of the element to get
+ * @param stringOut - The place where the int result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_index_as_int(JsonElementRef element, int index, int* intOut);
+
+/**
+ * Shortcut for calling json_index and then json_as_bool.
+ * @param element - The element to query
+ * @param index - The index of the element to get
+ * @param stringOut - The place where the bool result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_index_as_bool(JsonElementRef element, int index, bool* boolOut);
+
+/**
+ * Shortcut for calling json_key and then json_as_string.
+ * @param element - The element to query
+ * @param key - The key to search for
+ * @param stringOut - The place where the string result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_key_as_string(JsonElementRef element, char* key, char** stringOut);
+
+/**
+ * Shortcut for calling json_key and then json_as_double.
+ * @param element - The element to query
+ * @param key - The key to search for
+ * @param stringOut - The place where the double result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_key_as_double(JsonElementRef element, char* key, double* doubleOut);
+
+/**
+ * Shortcut for calling json_key and then json_as_int.
+ * @param element - The element to query
+ * @param key - The key to search for
+ * @param stringOut - The place where the int result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_key_as_int(JsonElementRef element, char* key, int* intOut);
+
+/**
+ * Shortcut for calling json_key and then json_as_bool.
+ * @param element - The element to query
+ * @param key - The key to search for
+ * @param stringOut - The place where the bool result will be stored
+ * @return 1 if success, 0 if failure
+ */
+int json_key_as_bool(JsonElementRef element, char* key, bool* boolOut);
+
 #endif //CS430_PROJ2_RAYCASTER_JSON_H

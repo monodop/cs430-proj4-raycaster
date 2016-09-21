@@ -11,5 +11,6 @@ typedef struct {
     double z;
     double w;
 } Vector;
+typedef Vector* VectorRef;
 
 #endif //CS430_PROJ2_RAYCASTER_VEC_H

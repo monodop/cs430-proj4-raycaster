@@ -7,6 +7,7 @@
 
 #include "vec.h"
 #include "image.h"
+#include "json.h"
 
 typedef struct {
     double width;
@@ -49,5 +50,13 @@ typedef struct {
     SceneObjectRef objects;
 } Scene;
 typedef Scene* SceneRef;
+
+/**
+ * Builds a scene from a root json object representing a scene
+ * @param jsonRoot - The root json object
+ * @param sceneOut - The place where the scene will be stored
+ * @return 1 if success, 0 if failure
+ */
+int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut);
 
 #endif //CS430_PROJ2_RAYCASTER_SCENE_H

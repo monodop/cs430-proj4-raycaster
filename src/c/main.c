@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "../headers/json.h"
+#include "../headers/scene.h"
 
 int displayUsage();
 
@@ -12,6 +13,7 @@ int main(int argc, char* argv[]) {
     char* outputFilename;
     FILE *filePointer;
     JsonElement rootElement;
+    Scene scene;
 
     // Validate argument count
     if (argc != 5)
@@ -42,8 +44,11 @@ int main(int argc, char* argv[]) {
         return displayUsage();
     }
 
-    // Parse
+    // Parse scene data
     json_parse(filePointer, &rootElement);
+
+    // Build scene
+    scene_build(&rootElement, &scene);
 
     printf("Hello world!");
     return 0;

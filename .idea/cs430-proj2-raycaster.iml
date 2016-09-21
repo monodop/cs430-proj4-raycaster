@@ -14,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/scene.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/main.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />

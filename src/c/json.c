@@ -439,7 +439,7 @@ int json_as_int(JsonElementRef element, int* intOut) {
         return 0;
     }
 
-    (*intOut) = (int)element->data.dataString;
+    (*intOut) = (int)element->data.dataNumber;
     return 1;
 }
 
@@ -454,4 +454,68 @@ int json_as_bool(JsonElementRef element, bool* boolOut) {
 
     (*boolOut) = element->data.dataBool;
     return 1;
+}
+
+int json_index_as_string(JsonElementRef element, int index, char** stringOut) {
+    JsonElementRef subElem;
+    if (!json_index(element, index, &subElem)) {
+        return 0;
+    }
+    return json_as_string(subElem, stringOut);
+}
+
+int json_index_as_double(JsonElementRef element, int index, double* doubleOut) {
+    JsonElementRef subElem;
+    if (!json_index(element, index, &subElem)) {
+        return 0;
+    }
+    return json_as_double(subElem, doubleOut);
+}
+
+int json_index_as_int(JsonElementRef element, int index, int* intOut) {
+    JsonElementRef subElem;
+    if (!json_index(element, index, &subElem)) {
+        return 0;
+    }
+    return json_as_int(subElem, intOut);
+}
+
+int json_index_as_bool(JsonElementRef element, int index, bool* boolOut) {
+    JsonElementRef subElem;
+    if (!json_index(element, index, &subElem)) {
+        return 0;
+    }
+    return json_as_bool(subElem, boolOut);
+}
+
+int json_key_as_string(JsonElementRef element, char* key, char** stringOut) {
+    JsonElementRef subElem;
+    if (!json_key(element, key, &subElem)) {
+        return 0;
+    }
+    return json_as_string(subElem, stringOut);
+}
+
+int json_key_as_double(JsonElementRef element, char* key, double* doubleOut) {
+    JsonElementRef subElem;
+    if (!json_key(element, key, &subElem)) {
+        return 0;
+    }
+    return json_as_double(subElem, doubleOut);
+}
+
+int json_key_as_int(JsonElementRef element, char* key, int* intOut) {
+    JsonElementRef subElem;
+    if (!json_key(element, key, &subElem)) {
+        return 0;
+    }
+    return json_as_int(subElem, intOut);
+}
+
+int json_key_as_bool(JsonElementRef element, char* key, bool* boolOut) {
+    JsonElementRef subElem;
+    if (!json_key(element, key, &subElem)) {
+        return 0;
+    }
+    return json_as_bool(subElem, boolOut);
 }
