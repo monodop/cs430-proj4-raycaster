@@ -2,13 +2,15 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/scene.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/helpers.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm6.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/image.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/vec.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/json.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm3.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
