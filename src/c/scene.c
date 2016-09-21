@@ -34,19 +34,17 @@ int scene_populate_vector(JsonElementRef vectorRoot, VectorRef vector) {
         return 0;
     }
 
-    if (vectorRoot->count > 4) {
+    if (vectorRoot->count > 3) {
         fprintf(stderr, "Warning: Vector of size larger than 4 detected. Extra values will be ignored.\n");
     }
 
-    vector->x = vector->y = vector->z = vector->w = 0;
+    vector->x = vector->y = vector->z = 0;
     if (vectorRoot->count > 0)
         json_index_as_double(vectorRoot, 0, &vector->x);
     if (vectorRoot->count > 1)
         json_index_as_double(vectorRoot, 1, &vector->y);
     if (vectorRoot->count > 2)
         json_index_as_double(vectorRoot, 2, &vector->z);
-    if (vectorRoot->count > 3)
-        json_index_as_double(vectorRoot, 3, &vector->w);
 
     return 1;
 }
@@ -111,7 +109,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 return 0;
             }
             json_key(currentElement, "color", &subElement);
-            scene_populate_color(subElement, &currentObject.data.sphere.color);
+            scene_populate_color(subElement, &currentObject.color);
 
             if (!json_has_key(currentElement, "position")) {
                 fprintf(stderr, "Error: Invalid scene json. A sphere must have a position.\n");
@@ -134,7 +132,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 return 0;
             }
             json_key(currentElement, "color", &subElement);
-            scene_populate_color(subElement, &currentObject.data.plane.color);
+            scene_populate_color(subElement, &currentObject.color);
 
             if (!json_has_key(currentElement, "position")) {
                 fprintf(stderr, "Error: Invalid scene json. A plane must have a position.\n");

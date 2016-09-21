@@ -16,13 +16,11 @@ typedef struct {
 typedef SceneCamera* SceneCameraRef;
 
 typedef struct {
-    Color color;
     double radius;
 } SceneSphere;
 typedef SceneSphere* SceneSphereRef;
 
 typedef struct {
-    Color color;
     Vector normal;
 } ScenePlane;
 typedef ScenePlane* ScenePlaneRef;
@@ -36,6 +34,7 @@ typedef enum {
 typedef struct {
     SceneObjectType type;
     Vector pos;
+    Color color;
     union {
         SceneCamera camera;
         SceneSphere sphere;

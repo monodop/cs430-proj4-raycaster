@@ -5,6 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/headers/scene.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/helpers.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm6.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/raycast.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/image.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/vec.h" isTestSource="false" />
@@ -13,13 +14,14 @@
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/scene.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/main.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/scene.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/raycast.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/image.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/image.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
