@@ -3,6 +3,7 @@
 #include <errno.h>
 #include "../headers/json.h"
 #include "../headers/scene.h"
+#include "../headers/ppm.h"
 
 int displayUsage();
 
@@ -14,6 +15,7 @@ int main(int argc, char* argv[]) {
     FILE *filePointer;
     JsonElement rootElement;
     Scene scene;
+    PpmImage image;
 
     // Validate argument count
     if (argc != 5)
@@ -53,7 +55,14 @@ int main(int argc, char* argv[]) {
     // Unload json data - its no longer needed
     json_dispose(&rootElement);
 
-    printf("Hello world!");
+    // Setup image file
+    image_create(&image, (unsigned int)width, (unsigned int)height, (Color) { .r = 0, .g = 0, .b = 0 });
+
+    // TODO: Raycast
+
+    // Write image to file
+    ppm_write(outputFilename, &image);
+
     return 0;
 }
 

@@ -19,6 +19,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/image.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
