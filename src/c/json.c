@@ -101,8 +101,8 @@ int json_parse_number(FILE* filePointer, JsonElementRef root) {
  * @return 1 if success, 0 if failure
  */
 int json_parse_array(FILE* filePointer, JsonElementRef root) {
-    int c, oldSize, size, count;
-    JsonElementRef elements, elements2;
+    int c, size, count;
+    JsonElementRef elements;
 
     // Allocate the initial array
     count = 0;
@@ -141,18 +141,10 @@ int json_parse_array(FILE* filePointer, JsonElementRef root) {
         }
 
         // Check if we need more memory
-        if (count >= size-1) {
-            oldSize = size;
+        if (count >= size) {
             size *= 2;
-
-            // Allocate new string
             // TODO: check malloc for null return
-            elements2 = malloc(sizeof(JsonElement) * size);
-
-            // Copy the old string to its new address and free the old string
-            memcpy(elements2, elements, (size_t)(oldSize));
-            free(elements);
-            elements = elements2;
+            realloc(elements, sizeof(JsonElement) * size);
         }
     }
 
@@ -171,11 +163,10 @@ int json_parse_array(FILE* filePointer, JsonElementRef root) {
  * @return 1 if success, 0 if failure
  */
 int json_parse_object(FILE* filePointer, JsonElementRef root) {
-    int c, oldSize, size, count;
-    JsonElementRef elements, elements2;
+    int c, size, count;
+    JsonElementRef elements;
     char* key;
     char** keys;
-    char** keys2;
 
     // Allocate the initial array
     count = 0;
@@ -229,22 +220,11 @@ int json_parse_object(FILE* filePointer, JsonElementRef root) {
         }
 
         // Check if we need more memory
-        if (count >= size-1) {
-            oldSize = size;
+        if (count >= size) {
             size *= 2;
-
-            // Allocate new arrays
             // TODO: check malloc for null return
-            elements2 = malloc(sizeof(JsonElement) * size);
-            keys2 = malloc(sizeof(char*) * size);
-
-            // Copy the old string to its new address and free the old string
-            memcpy(elements2, elements, (size_t)(oldSize));
-            memcpy(keys2, keys, (size_t)(oldSize));
-            free(elements);
-            free(keys);
-            elements = elements2;
-            keys = keys2;
+            realloc(elements, sizeof(JsonElement) * size);
+            realloc(keys, sizeof(char*) * size);
         }
     }
 
