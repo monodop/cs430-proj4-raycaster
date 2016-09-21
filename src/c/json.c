@@ -144,7 +144,7 @@ int json_parse_array(FILE* filePointer, JsonElementRef root) {
         if (count >= size) {
             size *= 2;
             // TODO: check malloc for null return
-            realloc(elements, sizeof(JsonElement) * size);
+            elements = realloc(elements, sizeof(JsonElement) * size);
         }
     }
 
@@ -223,8 +223,8 @@ int json_parse_object(FILE* filePointer, JsonElementRef root) {
         if (count >= size) {
             size *= 2;
             // TODO: check malloc for null return
-            realloc(elements, sizeof(JsonElement) * size);
-            realloc(keys, sizeof(char*) * size);
+            elements = realloc(elements, sizeof(JsonElement) * size);
+            keys = realloc(keys, sizeof(char*) * size);
         }
     }
 
