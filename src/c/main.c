@@ -4,6 +4,7 @@
 #include "../headers/json.h"
 #include "../headers/scene.h"
 #include "../headers/ppm.h"
+#include "../headers/raycast.h"
 
 int displayUsage();
 
@@ -58,7 +59,8 @@ int main(int argc, char* argv[]) {
     // Setup image file
     image_create(&image, (unsigned int)width, (unsigned int)height, (Color) { .r = 0, .g = 0, .b = 0 });
 
-    // TODO: Raycast
+    // Perform raycasting
+    raycast_image(&image, &scene);
 
     // Write image to file
     ppm_write(outputFilename, &image);
