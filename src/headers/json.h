@@ -51,6 +51,13 @@ typedef JsonElement* JsonElementRef;
 int json_parse(FILE* filePointer, JsonElementRef root);
 
 /**
+ * Disposes a json element, and frees any memory its allocated
+ * @param root - The root element of the json structure
+ * @return 1 if success, 0 if failure
+ */
+int json_dispose(JsonElementRef root);
+
+/**
  * Checks if a JSON_OBJECT has the specified key
  * @param element - The element to check
  * @param key - The key to search for

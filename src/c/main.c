@@ -50,6 +50,9 @@ int main(int argc, char* argv[]) {
     // Build scene
     scene_build(&rootElement, &scene);
 
+    // Unload json data - its no longer needed
+    json_dispose(&rootElement);
+
     printf("Hello world!");
     return 0;
 }

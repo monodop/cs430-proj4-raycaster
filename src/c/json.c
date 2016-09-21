@@ -314,7 +314,37 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
     return 1;
 }
 
-int json_dispose(JsonElementRef root);
+int json_dispose(JsonElementRef root) {
+    int i;
+    switch (root->type) {
+        case JSON_STRING:
+            // Dispose the string
+            free(root->data.dataString);
+            break;
+        case JSON_ARRAY:
+            // Dispose each element
+            for (i = 0; i < root->count; i++) {
+                json_dispose(root->data.dataElements + i);
+            }
+            // Dispose the list
+            free(root->data.dataElements);
+            break;
+        case JSON_OBJECT:
+            // Dispose each element and free each key string
+            for (i = 0; i < root->count; i++) {
+                json_dispose(root->data.dataElements + i);
+                free(root->keys[i]);
+            }
+            // Dispose the lists
+            free(root->data.dataElements);
+            free(root->keys);
+            break;
+        default:
+            // Normal elements have no allocations, so we're good
+            break;
+    }
+    return 1;
+}
 
 int json_has_key(JsonElementRef element, char* key) {
     int i, foundIndex;
