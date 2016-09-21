@@ -11,11 +11,11 @@
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm3.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/main.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />

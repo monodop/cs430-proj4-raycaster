@@ -335,3 +335,123 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
 }
 
 int json_dispose(JsonElementRef root);
+
+int json_has_key(JsonElementRef element, char* key) {
+    int i, foundIndex;
+
+    // Check object type
+    if (element->type != JSON_OBJECT) {
+        return 0;
+    }
+
+    // Search for key
+    foundIndex = -1;
+    for (i = 0; i < element->count; i++) {
+        if (strcmp(key, element->keys[i]) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    // Return result
+    return foundIndex >= 0;
+}
+
+int json_key(JsonElementRef element, char* key, JsonElementRef* elementOut) {
+    int i, foundIndex;
+
+    // Check object type
+    if (element->type != JSON_OBJECT) {
+        fprintf(stderr, "Can only call json_key on a json value of type JSON_OBJECT.\n");
+        return 0;
+    }
+
+    // Search for key
+    foundIndex = -1;
+    for (i = 0; i < element->count; i++) {
+        if (strcmp(key, element->keys[i]) == 0) {
+            foundIndex = i;
+            break;
+        }
+    }
+
+    // Error if not found
+    if (foundIndex < 0) {
+        fprintf(stderr, "Could not find key '%s' in json object.", key);
+        return 0;
+    }
+
+    // Get element at index
+    return json_index(element, foundIndex, elementOut);
+}
+
+int json_index(JsonElementRef element, int index, JsonElementRef* elementOut) {
+
+    // Check object type
+    if (element->type != JSON_OBJECT && element->type != JSON_ARRAY) {
+        fprintf(stderr, "Can only call json_index on a json value of type JSON_OBJECT or JSON_ARRAY.\n");
+        return 0;
+    }
+
+    // Check if index is in range
+    if (index >= element->count) {
+        fprintf(stderr, "Index %d out of range of element's values.\n", index);
+        return 0;
+    }
+
+    // pass the reference to the selected element back through elementOut
+    (*elementOut) = &(element->data.dataElements[index]);
+    return 1;
+}
+
+int json_as_string(JsonElementRef element, char** stringOut) {
+
+    // TODO: Allow more types of objects to be cast to string
+
+    if (element->type != JSON_STRING) {
+        fprintf(stderr, "Cannot convert a non JSON_STRING value to a string.");
+        return 0;
+    }
+
+    (*stringOut) = element->data.dataString;
+    return 1;
+}
+
+int json_as_double(JsonElementRef element, double* doubleOut) {
+
+    // TODO: Allow more types of objects to be cast to double
+
+    if (element->type != JSON_NUMBER) {
+        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to a string.");
+        return 0;
+    }
+
+    (*doubleOut) = element->data.dataNumber;
+    return 1;
+}
+
+int json_as_int(JsonElementRef element, int* intOut) {
+
+    // TODO: Allow more types of objects to be cast to int
+
+    if (element->type != JSON_NUMBER) {
+        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to a string.");
+        return 0;
+    }
+
+    (*intOut) = (int)element->data.dataString;
+    return 1;
+}
+
+int json_as_bool(JsonElementRef element, bool* boolOut) {
+
+    // TODO: Allow more types of objects to be cast to bool
+
+    if (element->type != JSON_BOOLEAN) {
+        fprintf(stderr, "Cannot convert a non JSON_BOOLEAN value to a string.");
+        return 0;
+    }
+
+    (*boolOut) = element->data.dataBool;
+    return 1;
+}

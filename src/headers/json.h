@@ -50,4 +50,64 @@ typedef JsonElement* JsonElementRef;
  */
 int json_parse(FILE* filePointer, JsonElementRef root);
 
+/**
+ * Checks if a JSON_OBJECT has the specified key
+ * @param element - The element to check
+ * @param key - The key to search for
+ * @return 1 if found, 0 if not found, or the element has no keys
+ */
+int json_has_key(JsonElementRef element, char* key);
+
+/**
+ * Get the child element with the specified key and pass it to elementOut.
+ * (Element must be of type JSON_OBJECT).
+ * @param element - The element to search in
+ * @param key - The key to search for
+ * @param elementOut - The place to store the result
+ * @return 1 if success, 0 if failure (for example, when the key is not found)
+ */
+int json_key(JsonElementRef element, char* key, JsonElementRef* elementOut);
+
+/**
+ * Get the child element with the specified index and pass it to elementOut.
+ * (Element must be of type JSON_OBJECT or JSON_ARRAY).
+ * @param element - The element to search in
+ * @param index - The index to get
+ * @param elementOut - The place to store the result
+ * @return 1 if success, 0 if failure (for example, when the index is out of range)
+ */
+int json_index(JsonElementRef element, int index, JsonElementRef* elementOut);
+
+/**
+ * Converts the provided element to a string, and stores it to stringOut
+ * @param element - The element to convert
+ * @param stringOut - The place to store the result
+ * @return 1 if success, 0 if failure
+ */
+int json_as_string(JsonElementRef element, char** stringOut);
+
+/**
+ * Converts the provided element to a double, and stores it to doubleOut
+ * @param element - The element to convert
+ * @param stringOut - The place to store the result
+ * @return 1 if success, 0 if failure
+ */
+int json_as_double(JsonElementRef element, double* doubleOut);
+
+/**
+ * Converts the provided element to an int, and stores it to intOut
+ * @param element - The element to convert
+ * @param stringOut - The place to store the result
+ * @return 1 if success, 0 if failure
+ */
+int json_as_int(JsonElementRef element, int* intOut);
+
+/**
+ * Converts the provided element to a bool, and stores it to boolOut
+ * @param element - The element to convert
+ * @param stringOut - The place to store the result
+ * @return 1 if success, 0 if failure
+ */
+int json_as_bool(JsonElementRef element, bool* boolOut);
+
 #endif //CS430_PROJ2_RAYCASTER_JSON_H
