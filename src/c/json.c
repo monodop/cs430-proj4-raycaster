@@ -30,14 +30,14 @@ int json_read_string(FILE* filePointer, char** string) {
         c = getc(filePointer);
         if (c == '\\') {
             // TODO: Escape codes
-            fprintf(stderr, "Error: Unknown escape code. Unable to proceed parsing json file.");
+            fprintf(stderr, "Error: Unknown escape code. Unable to proceed parsing json file.\n");
             return 0;
         } else if (c == '"') {
             // End quote - end loop
             break;
         } else if (c == EOF) {
             // Error
-            fprintf(stderr, "Error: Unexpected EOF. Unable to proceed parsing json file.");
+            fprintf(stderr, "Error: Unexpected EOF. Unable to proceed parsing json file.\n");
             return 0;
         } else {
             // Normal character, write it to the string
@@ -258,15 +258,15 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
     } else if (c == 't') {
         // True?
         if (getc(filePointer) != 'r') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'u') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'e') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         root->type = JSON_BOOLEAN;
@@ -274,19 +274,19 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
     } else if (c == 'f') {
         // False?
         if (getc(filePointer) != 'a') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'l') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 's') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'e') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         root->type = JSON_BOOLEAN;
@@ -294,15 +294,15 @@ int json_parse(FILE* filePointer, JsonElementRef root) {
     } else if (c == 'n') {
         // Null?
         if (getc(filePointer) != 'u') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'l') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         if (getc(filePointer) != 'l') {
-            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.");
+            fprintf(filePointer, "Unexpected symbol detected. Unable to proceed.\n");
             return 0;
         }
         root->type = JSON_NULL;
@@ -419,7 +419,7 @@ int json_as_string(JsonElementRef element, char** stringOut) {
     // TODO: Allow more types of objects to be cast to string
 
     if (element->type != JSON_STRING) {
-        fprintf(stderr, "Cannot convert a non JSON_STRING value to a string.");
+        fprintf(stderr, "Cannot convert a non JSON_STRING value to a string.\n");
         return 0;
     }
 
@@ -432,7 +432,7 @@ int json_as_double(JsonElementRef element, double* doubleOut) {
     // TODO: Allow more types of objects to be cast to double
 
     if (element->type != JSON_NUMBER) {
-        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to a string.");
+        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to a double.\n");
         return 0;
     }
 
@@ -445,7 +445,7 @@ int json_as_int(JsonElementRef element, int* intOut) {
     // TODO: Allow more types of objects to be cast to int
 
     if (element->type != JSON_NUMBER) {
-        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to a string.");
+        fprintf(stderr, "Cannot convert a non JSON_NUMBER value to an int.\n");
         return 0;
     }
 
@@ -458,7 +458,7 @@ int json_as_bool(JsonElementRef element, bool* boolOut) {
     // TODO: Allow more types of objects to be cast to bool
 
     if (element->type != JSON_BOOLEAN) {
-        fprintf(stderr, "Cannot convert a non JSON_BOOLEAN value to a string.");
+        fprintf(stderr, "Cannot convert a non JSON_BOOLEAN value to a bool.\n");
         return 0;
     }
 
