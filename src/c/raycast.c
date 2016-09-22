@@ -105,7 +105,7 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
     Ray ray;
     SceneObjectRef hitObject;
 
-    int i = 0, totalPixels = img_width * img_height;
+    long i = 0, totalPixels = img_width * img_height;
 
     // Loop over pixels in the image
     for (int y = 0; y < img_height; y++ ) {
@@ -113,7 +113,7 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
         for (int x = 0; x < img_width; x++ ) {
 
             if (i % 250000 == 0) {
-                printf("%d%% rays casted\n", (i*100)/totalPixels);
+                printf("%d%% rays casted\n", (int)((i*100)/totalPixels));
             }
             i++;
 
