@@ -64,10 +64,16 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     sceneOut->objectCount = jsonRoot->count - 1;
     sceneOut->objects = malloc(sizeof(SceneObject) * sceneOut->objectCount);
+    if (sceneOut->objects == NULL) {
+        fprintf(stderr, "Error: Unable to allocate enough memory to store %d scene objects.\n", sceneOut->objectCount);
+        return 0;
+    }
 
     for (i = 0, o_i = 0; i < jsonRoot->count; i++) {
 
-        json_index(jsonRoot, i, &currentElement);
+        if (!json_index(jsonRoot, i, &currentElement)) {
+            return 0;
+        }
         if (currentElement->type != JSON_OBJECT) {
             fprintf(stderr, "Error: Invald scene json. Array element #%d must be an object.\n", i);
             return 0;
@@ -78,7 +84,9 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             return 0;
         }
 
-        json_key_as_string(currentElement, "type", &type);
+        if (!json_key_as_string(currentElement, "type", &type)) {
+            return 0;
+        }
         if (strcmp(type, "camera") == 0) {
             if (cameraFound) {
                 fprintf(stderr, "Error: Invalid scene json. Only one camera is supported in the scene.\n");
@@ -90,13 +98,17 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: Invalid scene json. A camera must have a width.\n");
                 return 0;
             }
-            json_key_as_double(currentElement, "width", &(currentObject.data.camera.width));
+            if (!json_key_as_double(currentElement, "width", &(currentObject.data.camera.width))) {
+                return 0;
+            }
 
             if (!json_has_key(currentElement, "height")) {
                 fprintf(stderr, "Error: Invalid scene json. A camera must have a height.\n");
                 return 0;
             }
-            json_key_as_double(currentElement, "height", &(currentObject.data.camera.height));
+            if (!json_key_as_double(currentElement, "height", &(currentObject.data.camera.height))) {
+                return 0;
+            }
 
             sceneOut->camera = currentObject;
             cameraFound = true;
@@ -108,21 +120,31 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: Invalid scene json. A sphere must have a color.\n");
                 return 0;
             }
-            json_key(currentElement, "color", &subElement);
-            scene_populate_color(subElement, &currentObject.color);
+            if (!json_key(currentElement, "color", &subElement)) {
+                return 0;
+            }
+            if (!scene_populate_color(subElement, &currentObject.color)) {
+                return 0;
+            }
 
             if (!json_has_key(currentElement, "position")) {
                 fprintf(stderr, "Error: Invalid scene json. A sphere must have a position.\n");
                 return 0;
             }
-            json_key(currentElement, "position", &subElement);
-            scene_populate_vector(subElement, &currentObject.pos);
+            if (!json_key(currentElement, "position", &subElement)) {
+                return 0;
+            }
+            if (!scene_populate_vector(subElement, &currentObject.pos)) {
+                return 0;
+            }
 
             if (!json_has_key(currentElement, "radius")) {
                 fprintf(stderr, "Error: Invalid scene json. A sphere must have a radius.\n");
                 return 0;
             }
-            json_key_as_double(currentElement, "radius", &currentObject.data.sphere.radius);
+            if (!json_key_as_double(currentElement, "radius", &currentObject.data.sphere.radius)) {
+                return 0;
+            }
 
         } else if (strcmp(type, "plane") == 0) {
             currentObject.type = SCENE_OBJECT_PLANE;
@@ -131,22 +153,34 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: Invalid scene json. A plane must have a color.\n");
                 return 0;
             }
-            json_key(currentElement, "color", &subElement);
-            scene_populate_color(subElement, &currentObject.color);
+            if (!json_key(currentElement, "color", &subElement)) {
+                return 0;
+            }
+            if (!scene_populate_color(subElement, &currentObject.color)) {
+                return 0;
+            }
 
             if (!json_has_key(currentElement, "position")) {
                 fprintf(stderr, "Error: Invalid scene json. A plane must have a position.\n");
                 return 0;
             }
-            json_key(currentElement, "position", &subElement);
-            scene_populate_vector(subElement, &currentObject.pos);
+            if (!json_key(currentElement, "position", &subElement)) {
+                return 0;
+            }
+            if (!scene_populate_vector(subElement, &currentObject.pos)) {
+                return 0;
+            }
 
             if (!json_has_key(currentElement, "normal")) {
                 fprintf(stderr, "Error: Invalid scene json. A plane must have a normal.\n");
                 return 0;
             }
-            json_key(currentElement, "normal", &subElement);
-            scene_populate_vector(subElement, &currentObject.data.plane.normal);
+            if (!json_key(currentElement, "normal", &subElement)) {
+                return 0;
+            }
+            if (!scene_populate_vector(subElement, &currentObject.data.plane.normal)) {
+                return 0;
+            }
         } else {
             fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
             return 0;

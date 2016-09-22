@@ -48,22 +48,40 @@ int main(int argc, char* argv[]) {
     }
 
     // Parse scene data
-    json_parse(filePointer, &rootElement);
+    if (!json_parse(filePointer, &rootElement)) {
+        fprintf(stderr, "Error: Unable to parse JSON input file. Render cancelled.\n");
+        return displayUsage();
+    }
 
     // Build scene
-    scene_build(&rootElement, &scene);
+    if (!scene_build(&rootElement, &scene)) {
+        fprintf(stderr, "Error: Unable to build object scene. Render cancelled.\n");
+        return displayUsage();
+    }
 
     // Unload json data - its no longer needed
-    json_dispose(&rootElement);
+    if (!json_dispose(&rootElement)) {
+        fprintf(stderr, "Error: Error disposing json structure. Render cancelled.\n");
+        return displayUsage();
+    }
 
     // Setup image file
-    image_create(&image, (unsigned int)width, (unsigned int)height, (Color) { .r = 0, .g = 0, .b = 0 });
+    if (!image_create(&image, (unsigned int)width, (unsigned int)height, (Color) { .r = 0, .g = 0, .b = 0 })) {
+        fprintf(stderr, "Error: Could not create image buffer. Render cancelled.\n");
+        return displayUsage();
+    }
 
     // Perform raycasting
-    raycast_image(&image, &scene);
+    if (!raycast_image(&image, &scene)) {
+        fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");
+        return displayUsage();
+    }
 
     // Write image to file
-    ppm_write(outputFilename, &image);
+    if (!ppm_write(outputFilename, &image)) {
+        fprintf(stderr, "Error: Unable to write the output file. Render cancelled.\n");
+        return displayUsage();
+    }
 
     return 0;
 }

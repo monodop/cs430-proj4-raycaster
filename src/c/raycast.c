@@ -4,17 +4,26 @@
 
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
-#include "../headers/scene.h"
 
+/**
+ * Tests for a sphere intersection against a ray. Passes the hit position and distance to hitOut and distanceOut.
+ * If no hit was detected, then distanceOut will be INIFINITY
+ * @param ray - The ray to test
+ * @param sphere_center - The center of the sphere
+ * @param sphere_radius - The radius of the sphere
+ * @param hitOut - The place to store the hit location
+ * @param distanceOut - The place to store the hit distance
+ */
 void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, VectorRef hitOut, double* distanceOut) {
     double b, c, t, disc;
     Vector diff = vec_sub(ray.pos, sphere_center);
 
+    // Calculate discriminator
     b = 2 * ( ray.dir.x*diff.x + ray.dir.y*diff.y + ray.dir.z*diff.z );
     c = diff.x*diff.x + diff.y*diff.y + diff.z*diff.z - sphere_radius*sphere_radius;
     disc = b*b - 4*c;
 
-    // No intersection
+    // No intersection if negative discriminator
     if (disc < 0.0) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
@@ -22,22 +31,33 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     }
     disc = sqrt(disc);
 
+    // Calcualte t-value
     t = (-b - disc) / 2.0;
     if (t < 0.0)
         t = (-b + disc) / 2.0;
 
-    // No intersection
+    // No intersection if t value is negative (sphere is behind ray)
     if (t < 0.0) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
         return;
     }
 
+    // Output hit
     (*hitOut) = vec_add(ray.pos, vec_scale(ray.dir, t));
     (*distanceOut) = t;
     return;
 }
 
+/**
+ * Tests for a plane intersection against a ray. Passes the hit position and distance to hitOut and distanceOut.
+ * If no hit was detected, then distanceOut will be INIFINITY
+ * @param ray - The ray to test
+ * @param plane_center - The center of the plane
+ * @param plane_normal - The normal vector of the plane
+ * @param hitOut - The place to store the hit location
+ * @param distanceOut - The place to store the hit distance
+ */
 void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRef hitOut, double* distanceOut) {
     Vector u_pn = vec_unit(plane_normal);
     double vd = vec_dot(u_pn, ray.dir);
@@ -61,6 +81,7 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
         return;
     }
 
+    // Output hit
     (*hitOut) = vec_add(ray.pos, vec_scale(ray.dir, t));
     (*distanceOut) = t;
     return;
@@ -68,6 +89,7 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
 
 int raycast_image(PpmImageRef image, SceneRef scene) {
 
+    // Setup calculations
     Vector vp_center = { .x = 0, .y = 0, .z = 1 };
     double vp_width = scene->camera.data.camera.width;
     double vp_height = scene->camera.data.camera.height;
@@ -81,23 +103,32 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
     Ray ray;
     SceneObjectRef hitObject;
 
+    // Loop over pixels in the image
     for (int y = 0; y < img_height; y++ ) {
 
         for (int x = 0; x < img_width; x++ ) {
 
+            // Calculate ray target
             point.x = vp_center.x - vp_width/2.0 + pix_width * (x + 0.5);
             point.y = -(vp_center.y - vp_height/2.0 + pix_height * (y + 0.5));
             point.z = vp_center.z;
 
+            // Create ray
             ray.pos = (Vector) { .x = 0, .y = 0, .z = 0 };
             ray.dir = vec_unit(point);
 
-            raycast_shoot(ray, scene, 100.0, &hitPos, &hitObject);
+            // Shoot ray
+            if (!raycast_shoot(ray, scene, 100.0, &hitPos, &hitObject)) {
+                fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
+                return 0;
+            }
 
+            // No hit detected, make no changes this loop
             if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
                 continue;
             }
 
+            // Save hit object's color to the pixel
             image->pixels[wxy_to_index(img_width, x, y)] = hitObject->color;
 
         }
@@ -115,9 +146,11 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosi
     double distance;
     SceneObjectRef bestHitObject = NULL;
 
+    // Iterate over the scene
     for (int i = 0; i < scene->objectCount; i++) {
         switch (scene->objects[i].type) {
             case SCENE_OBJECT_SPHERE:
+                // Test sphere intersection
                 sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance);
                 if (distance < bestDistance) {
                     bestDistance = distance;
@@ -126,6 +159,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosi
                 }
                 break;
             case SCENE_OBJECT_PLANE:
+                // Test plane intersection
                 plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
                 if (distance < bestDistance) {
                     bestDistance = distance;
@@ -138,6 +172,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosi
         }
     }
 
+    // Pass back the best hit
     (*hitPosition) = bestHit;
     if (bestDistance != INFINITY) {
         (*hitObject) = bestHitObject;

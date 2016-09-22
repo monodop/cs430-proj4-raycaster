@@ -3,6 +3,7 @@
 //
 
 #include <stdlib.h>
+#include <stdio.h>
 #include "../headers/image.h"
 
 int image_create(PpmImageRef image, unsigned int width, unsigned int height, Color backgroundColor) {
@@ -15,7 +16,10 @@ int image_create(PpmImageRef image, unsigned int width, unsigned int height, Col
     image->header.imageWidth = width;
     image->header.imageHeight = height;
     image->pixels = malloc(sizeof(Color) * width * height);
-    // TODO: check for null pointer from malloc
+    if (image->pixels == NULL) {
+        fprintf(stderr, "Error: Unable to allocate enough memory to store an image of size %dx%d.\n", width, height);
+        return 0;
+    }
 
     // Set the background color
     for (i = 0; i < width * height; i++) {
