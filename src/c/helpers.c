@@ -60,11 +60,11 @@ int skip_whitespace(FILE* fp) {
     return count;
 }
 
-int wxy_to_index(int width, int x, int y) {
-    return x + y*width;
+long wxy_to_index(int width, int x, int y) {
+    return (long)x + ((long)y)*((long)width);
 }
 
-void index_to_xwy(int index, int width, int* x, int* y) {
-    *x = index % width;
-    *y = index / width;
+void index_to_xwy(long index, int width, int* x, int* y) {
+    *x = (int)(index % width);
+    *y = (int)(index / width);
 }

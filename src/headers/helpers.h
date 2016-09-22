@@ -36,7 +36,7 @@ int skip_whitespace(FILE* fp);
  * @param y - the y coordinate
  * @return - the index in the array
  */
-int wxy_to_index(int width, int x, int y);
+long wxy_to_index(int width, int x, int y);
 
 /**
  * Converts an index (of 1D array) and width (of 2D grid) into x and y coordinates
@@ -45,6 +45,6 @@ int wxy_to_index(int width, int x, int y);
  * @param x - The pointer to where the x coordinate should be stored
  * @param y - The pointer to where the y coordinate should be stored
  */
-void index_to_xwy(int index, int width, int* x, int* y);
+void index_to_xwy(long index, int width, int* x, int* y);
 
 #endif //CS430_PROJ1_IMAGES_HELPERS_H

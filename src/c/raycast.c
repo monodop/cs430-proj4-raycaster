@@ -5,6 +5,24 @@
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
 
+#include <pthread.h>
+#include <unistd.h>
+
+typedef struct {
+    PpmImageRef image;
+    SceneRef    scene;
+    long        startIndex, endIndex;
+} WorkerArgs;
+
+typedef struct {
+    pthread_t  thread_handle;
+    long       progress;
+    int        completed;
+    WorkerArgs args;
+} Worker;
+
+#define WORKER_THREADS 8
+
 /**
  * Tests for a sphere intersection against a ray. Passes the hit position and distance to hitOut and distanceOut.
  * If no hit was detected, then distanceOut will be INIFINITY
@@ -87,11 +105,12 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
     return;
 }
 
-int raycast_image(PpmImageRef image, SceneRef scene) {
-
-    printf("Beginning ray casting.\n");
+void* raycast_worker(void* arg) {
 
     // Setup calculations
+    Worker* worker = (Worker*)arg;
+    SceneRef scene = worker->args.scene;
+    PpmImageRef image = worker->args.image;
     Vector vp_center = { .x = 0, .y = 0, .z = 1 };
     double vp_width = scene->camera.data.camera.width;
     double vp_height = scene->camera.data.camera.height;
@@ -105,43 +124,90 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
     Ray ray;
     SceneObjectRef hitObject;
 
-    long i = 0, totalPixels = img_width * img_height;
+    long i, totalPixels = img_width * img_height;
+    int x, y;
 
     // Loop over pixels in the image
-    for (int y = 0; y < img_height; y++ ) {
+    for (i = worker->args.startIndex; i < worker->args.endIndex; i++) {
 
-        for (int x = 0; x < img_width; x++ ) {
+        worker->progress = i - worker->args.startIndex;
+        index_to_xwy(i, img_width, &x, &y);
 
-            if (i % 250000 == 0) {
-                printf("%d%% rays casted\n", (int)((i*100)/totalPixels));
-            }
-            i++;
+        // Calculate ray target
+        point.x = vp_center.x - vp_width/2.0 + pix_width * (x + 0.5);
+        point.y = -(vp_center.y - vp_height/2.0 + pix_height * (y + 0.5));
+        point.z = vp_center.z;
 
-            // Calculate ray target
-            point.x = vp_center.x - vp_width/2.0 + pix_width * (x + 0.5);
-            point.y = -(vp_center.y - vp_height/2.0 + pix_height * (y + 0.5));
-            point.z = vp_center.z;
+        // Create ray
+        ray.pos = (Vector) { .x = 0, .y = 0, .z = 0 };
+        ray.dir = vec_unit(point);
 
-            // Create ray
-            ray.pos = (Vector) { .x = 0, .y = 0, .z = 0 };
-            ray.dir = vec_unit(point);
-
-            // Shoot ray
-            if (!raycast_shoot(ray, scene, 100.0, &hitPos, &hitObject)) {
-                fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
-                return 0;
-            }
-
-            // No hit detected, make no changes this loop
-            if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
-                continue;
-            }
-
-            // Save hit object's color to the pixel
-            image->pixels[wxy_to_index(img_width, x, y)] = hitObject->color;
-
+        // Shoot ray
+        if (!raycast_shoot(ray, scene, 100.0, &hitPos, &hitObject)) {
+            fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
+            return 0;
         }
 
+        // No hit detected, make no changes this loop
+        if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
+            continue;
+        }
+
+        // Save hit object's color to the pixel
+        image->pixels[wxy_to_index(img_width, x, y)] = hitObject->color;
+
+    }
+
+    worker->completed = 1;
+
+    return NULL;
+}
+
+int raycast_image(PpmImageRef image, SceneRef scene) {
+
+    printf("Beginning ray casting.\n");
+
+    Worker workers[WORKER_THREADS];
+    Worker* worker;
+
+    // Distribute the workload across multiple threads
+    long total_workload = image->header.imageWidth * image->header.imageHeight;
+    long workload = (long)ceil(total_workload / (float)WORKER_THREADS);
+    int w;
+
+    // Create worker threads
+    for (w = 0; w < WORKER_THREADS; w++) {
+        worker = workers + w;
+        worker->completed = 0;
+        worker->progress = 0;
+        worker->args.image = image;
+        worker->args.scene = scene;
+        worker->args.startIndex = w * workload;
+        worker->args.endIndex = worker->args.startIndex + workload;
+        if (worker->args.endIndex > total_workload)
+            worker->args.endIndex = total_workload;
+        pthread_create(&(worker->thread_handle), NULL, raycast_worker, worker);
+    }
+
+    printf("Ray casting workers allocated.\n");
+
+    // Wait for all workers to complete
+    int workers_remaining = WORKER_THREADS;
+    long progress;
+    while (workers_remaining > 0) {
+        progress = 0;
+        for (w = 0; w < WORKER_THREADS; w++) {
+            worker = workers + w;
+            progress += worker->progress;
+            if (worker->thread_handle != NULL && worker->completed) {
+                // Join completed worker thread
+                pthread_join(worker->thread_handle, NULL);
+                worker->thread_handle = NULL;
+                workers_remaining--;
+            }
+        }
+        printf("%d%% rays casted\n", (int)((progress * 100)/total_workload));
+        sleep(1);
     }
 
     printf("100%% rays casted\n");

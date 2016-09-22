@@ -4,7 +4,7 @@ HEADERDIR=$(SOURCES)/headers
 CDIR=$(SOURCES)/c
 OBJDIR=obj
 BINDIR=bin
-CFLAGS=-I$(SOURCES)
+CFLAGS=-I$(SOURCES) -pthread
 
 _DEPS=$(wildcard $(HEADERDIR)/*.h)
 DEPS=$(patsubst %,./%,$(_DEPS))
@@ -17,10 +17,10 @@ OBJ=$(patsubst $(CDIR)/%,$(OBJDIR)/%,$(_OBJ))
 build: clean $(OBJDIR) $(BINDIR) raycast
 
 raycast: $(OBJ)
-	gcc -o $(BINDIR)/$@ $^ -I.
+	gcc -o $(BINDIR)/$@ $^ $(CFLAGS)
 
 $(OBJDIR)/%.o: $(CDIR)/%.c $(DEPS)
-	gcc -c -o $@ $< -I.
+	gcc -c -o $@ $< $(CFLAGS)
 
 $(OBJDIR):
 	mkdir $(OBJDIR)
