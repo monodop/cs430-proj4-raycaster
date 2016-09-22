@@ -4,7 +4,7 @@ HEADERDIR=$(SOURCES)/headers
 CDIR=$(SOURCES)/c
 OBJDIR=obj
 BINDIR=bin
-CFLAGS=-I$(SOURCES) -pthread
+CFLAGS=-I$(SOURCES) -pthread -O3
 
 _DEPS=$(wildcard $(HEADERDIR)/*.h)
 DEPS=$(patsubst %,./%,$(_DEPS))
