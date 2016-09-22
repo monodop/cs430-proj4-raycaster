@@ -53,6 +53,10 @@ int main(int argc, char* argv[]) {
         return displayUsage();
     }
 
+    printf("Input json file processed.\n");
+    // Close input file
+    fclose(filePointer);
+
     // Build scene
     if (!scene_build(&rootElement, &scene)) {
         fprintf(stderr, "Error: Unable to build object scene. Render cancelled.\n");
@@ -64,12 +68,14 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "Error: Error disposing json structure. Render cancelled.\n");
         return displayUsage();
     }
+    printf("Json data unloaded.\n");
 
     // Setup image file
     if (!image_create(&image, (unsigned int)width, (unsigned int)height, (Color) { .r = 0, .g = 0, .b = 0 })) {
         fprintf(stderr, "Error: Could not create image buffer. Render cancelled.\n");
         return displayUsage();
     }
+    printf("Image buffer created.\n");
 
     // Perform raycasting
     if (!raycast_image(&image, &scene)) {

@@ -51,6 +51,8 @@ int scene_populate_vector(JsonElementRef vectorRoot, VectorRef vector) {
 
 int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
+    printf("Beginning building scene.\n");
+
     JsonElementRef currentElement, subElement;
     SceneObject currentObject;
     int i, o_i;
@@ -68,6 +70,8 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
         fprintf(stderr, "Error: Unable to allocate enough memory to store %d scene objects.\n", sceneOut->objectCount);
         return 0;
     }
+
+    printf("%d objects in scene detected.\n", jsonRoot->count);
 
     for (i = 0, o_i = 0; i < jsonRoot->count; i++) {
 
@@ -112,6 +116,8 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
             sceneOut->camera = currentObject;
             cameraFound = true;
+
+            printf("Object %d/%d of type Camera loaded.\n", i+1, jsonRoot->count);
             continue;
         } else if (strcmp(type, "sphere") == 0) {
             currentObject.type = SCENE_OBJECT_SPHERE;
@@ -145,6 +151,8 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             if (!json_key_as_double(currentElement, "radius", &currentObject.data.sphere.radius)) {
                 return 0;
             }
+
+            printf("Object %d/%d of type Sphere loaded.\n", i+1, jsonRoot->count);
 
         } else if (strcmp(type, "plane") == 0) {
             currentObject.type = SCENE_OBJECT_PLANE;
@@ -181,11 +189,13 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             if (!scene_populate_vector(subElement, &currentObject.data.plane.normal)) {
                 return 0;
             }
+
+            printf("Object %d/%d of type Plane loaded.\n", i+1, jsonRoot->count);
+
         } else {
             fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
             return 0;
         }
-
         sceneOut->objects[o_i++] = currentObject;
     }
 
@@ -193,6 +203,8 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
         fprintf(stderr, "Error: Invalid scene json. A camera must be provided to render the scene.\n");
         return 0;
     }
+
+    printf("Completed building scene.\n");
 
     return 1;
 }

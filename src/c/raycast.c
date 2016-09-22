@@ -89,6 +89,8 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
 
 int raycast_image(PpmImageRef image, SceneRef scene) {
 
+    printf("Beginning ray casting.\n");
+
     // Setup calculations
     Vector vp_center = { .x = 0, .y = 0, .z = 1 };
     double vp_width = scene->camera.data.camera.width;
@@ -103,10 +105,17 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
     Ray ray;
     SceneObjectRef hitObject;
 
+    int i = 0, totalPixels = img_width * img_height;
+
     // Loop over pixels in the image
     for (int y = 0; y < img_height; y++ ) {
 
         for (int x = 0; x < img_width; x++ ) {
+
+            if (i % 250000 == 0) {
+                printf("%d%% rays casted\n", (i*100)/totalPixels);
+            }
+            i++;
 
             // Calculate ray target
             point.x = vp_center.x - vp_width/2.0 + pix_width * (x + 0.5);
@@ -134,6 +143,9 @@ int raycast_image(PpmImageRef image, SceneRef scene) {
         }
 
     }
+
+    printf("100%% rays casted\n");
+    printf("Ray casting completed.\n");
 
     return 1;
 }
