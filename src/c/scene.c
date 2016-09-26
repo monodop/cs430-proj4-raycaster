@@ -100,7 +100,7 @@ int scene_build_camera(JsonElementRef currentElement, SceneObjectRef currentObje
     return 1;
 }
 
-int scene_build_sphere(JsonElementRef currentElement, SceneObjectRef currentObject) {
+int scene_build_sphere(JsonElementRef currentElement, SceneObjectRef currentObject, int j) {
 
     JsonElementRef subElement;
 
@@ -132,7 +132,7 @@ int scene_build_sphere(JsonElementRef currentElement, SceneObjectRef currentObje
         fprintf(stderr, "Error: Invalid scene json. A sphere must have a radius.\n");
         return 0;
     }
-    if (!json_key_as_double(currentElement, "radius", &(currentObject->data.sphere.radius))) {
+    if (!json_key_as_double(currentElement, "radius", &(currentObject->data.sphere.radiusKfs[j]))) {
         return 0;
     }
 
@@ -182,7 +182,7 @@ int scene_build_plane(JsonElementRef currentElement, SceneObjectRef currentObjec
 }
 
 int scene_build_object(JsonElementRef currentElement, SceneRef scene, SceneObjectRef currentObject, char* type,
-                       bool* cameraFound, int i, int objectCount) {
+                       bool* cameraFound, int j) {
 
     if (strcmp(type, "camera") == 0) {
         if (*cameraFound) {
@@ -194,22 +194,39 @@ int scene_build_object(JsonElementRef currentElement, SceneRef scene, SceneObjec
         }
         scene->camera = currentObject;
         *cameraFound = true;
-        printf("Object %d/%d of type Camera loaded.\n", i+1, objectCount);
     } else if (strcmp(type, "sphere") == 0) {
-        if (!scene_build_sphere(currentElement, currentObject)) {
+        if (!scene_build_sphere(currentElement, currentObject, j)) {
             return 0;
         }
-        printf("Object %d/%d of type Sphere loaded.\n", i+1, objectCount);
     } else if (strcmp(type, "plane") == 0) {
         if (!scene_build_plane(currentElement, currentObject)) {
             return 0;
         }
-        printf("Object %d/%d of type Plane loaded.\n", i+1, objectCount);
-
     } else {
         fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
         return 0;
     }
+    return 1;
+}
+
+int scene_build_malloc_kfs(SceneObjectRef currentObject, char* type, int tCount) {
+
+    currentObject->tValues = malloc(sizeof(double) * tCount);
+    if (currentObject->tValues == NULL) {
+        return 0;
+    }
+
+    if (strcmp(type, "camera") == 0) {
+
+    } else if (strcmp(type, "sphere") == 0) {
+        currentObject->data.sphere.radiusKfs = malloc(sizeof(double) * tCount);
+        if (currentObject->data.sphere.radiusKfs == NULL) {
+            return 0;
+        }
+    } else if (strcmp(type, "plane") == 0) {
+
+    }
+
     return 1;
 }
 
@@ -218,7 +235,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
     printf("Beginning building scene.\n");
 
     JsonElementRef currentElement, subElement;
-    int i, j, frameCount;
+    int i, j;
     char* type;
     bool cameraFound = false;
 
@@ -263,18 +280,43 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: frames must be an array of scene objects.\n");
                 return 0;
             }
+            if (!scene_build_malloc_kfs(sceneOut->objects + i, type, currentElement->count)) {
+                fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
+                return 0;
+            }
             for (j = 0; j < currentElement->count; j++) {
                 if (!json_index(currentElement, j, &subElement)) {
                     return 0;
                 }
-                if (!scene_build_object(subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, i, jsonRoot->count)) {
+
+                if (!json_has_key(subElement, "time")) {
+                    fprintf(stderr, "Error: Invalid scene json. A frame must have an associated time.\n");
+                    return 0;
+                }
+                if (!json_key_as_double(subElement, "time", &(sceneOut->objects[i].tValues[j]))) {
+                    return 0;
+                }
+
+                if (!scene_build_object(subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, j)) {
                     return 0;
                 }
             }
         } else {
-            if (!scene_build_object(currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, i, jsonRoot->count)) {
+            if (!scene_build_malloc_kfs(sceneOut->objects + i, type, 1)) {
+                fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
             }
+            if (!scene_build_object(currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, 0)) {
+                return 0;
+            }
+        }
+
+        if (strcmp(type, "camera") == 0) {
+            printf("Object %d/%d of type Camera loaded.\n", i+1, jsonRoot->count);
+        } else if (strcmp(type, "sphere") == 0) {
+            printf("Object %d/%d of type Sphere loaded.\n", i+1, jsonRoot->count);
+        } else if (strcmp(type, "plane") == 0) {
+            printf("Object %d/%d of type Plane loaded.\n", i + 1, jsonRoot->count);
         }
 
     }
