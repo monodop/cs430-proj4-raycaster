@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 #include "../headers/json.h"
 #include "../headers/scene.h"
 #include "../headers/ppm.h"
@@ -10,7 +11,7 @@ int displayUsage();
 
 int main(int argc, char* argv[]) {
 
-    int width, height, frameCount;
+    int width, height, frameCount, i, padding, dotIndex;
     char* jsonFilename;
     char* outputFilename;
     char* frameFilename;
@@ -80,21 +81,43 @@ int main(int argc, char* argv[]) {
 
     // Calculate number of frames
     if (scene.camera.data.camera.animated) {
-        frameCount = (int)ceil((scene.camera.data.camera.endTime - scene.camera.data.camera.startTime) * scene.camera.data.camera.frameRate);
+        frameCount = (int)ceil((scene.camera.data.camera.endTime - scene.camera.data.camera.startTime) * scene.camera.data.camera.frameRate) + 1;
+        if (frameCount < 0) {
+            fprintf(stderr, "Error: startTime must be greater than endTime. Render cancelled.\n");
+            return 0;
+        }
+
+        // Calculate frame filename template
+        padding = (int)floor(log10(abs(frameCount))) + 1;
+        frameFilename = malloc(sizeof(char) * (strlen(outputFilename) + padding + 2));
+        dotIndex = (int)strcspn(outputFilename, ".");
+        memcpy(frameFilename, outputFilename, dotIndex);
+        strcpy(frameFilename + dotIndex + padding + 1, outputFilename + dotIndex);
+        frameFilename[dotIndex] = '-';
     } else {
         frameCount = 1;
+        frameFilename = outputFilename;
     }
 
-    // Perform raycasting
-    if (!raycast_image(&image, &scene)) {
-        fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");
-        return displayUsage();
-    }
+    for (i = 1; i <= frameCount; i++) {
 
-    // Write image to file
-    if (!ppm_write(outputFilename, &image)) {
-        fprintf(stderr, "Error: Unable to write the output file. Render cancelled.\n");
-        return displayUsage();
+        printf("Rendering frame %d of %d.\n", i, frameCount);
+
+        if (scene.camera.data.camera.animated) {
+            sprintf(frameFilename + dotIndex + 1, "%0*d", padding, i);
+            frameFilename[dotIndex + padding + 1] = '.';
+        }
+        // Perform raycasting
+        if (!raycast_image(&image, &scene)) {
+            fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");
+            return displayUsage();
+        }
+
+        // Write image to file
+        if (!ppm_write(frameFilename, &image)) {
+            fprintf(stderr, "Error: Unable to write the output file. Render cancelled.\n");
+            return displayUsage();
+        }
     }
 
     return 0;
