@@ -49,6 +49,138 @@ int scene_populate_vector(JsonElementRef vectorRoot, VectorRef vector) {
     return 1;
 }
 
+int scene_build_camera(JsonElementRef currentElement, SceneObjectRef currentObject) {
+    currentObject->type = SCENE_OBJECT_CAMERA;
+
+    if (!json_has_key(currentElement, "width")) {
+        fprintf(stderr, "Error: Invalid scene json. A camera must have a width.\n");
+        return 0;
+    }
+    if (!json_key_as_double(currentElement, "width", &(currentObject->data.camera.width))) {
+        return 0;
+    }
+
+    if (!json_has_key(currentElement, "height")) {
+        fprintf(stderr, "Error: Invalid scene json. A camera must have a height.\n");
+        return 0;
+    }
+    if (!json_key_as_double(currentElement, "height", &(currentObject->data.camera.height))) {
+        return 0;
+    }
+
+    if (json_has_key(currentElement, "animated")) {
+        if (!json_key_as_bool(currentElement, "animated", &(currentObject->data.camera.animated))) {
+            return 0;
+        }
+    } else {
+        currentObject->data.camera.animated = false;
+    }
+    if (json_has_key(currentElement, "startTime")) {
+        if (!json_key_as_double(currentElement, "startTime", &(currentObject->data.camera.startTime))) {
+            return 0;
+        }
+    } else {
+        currentObject->data.camera.startTime = 0;
+    }
+    if (json_has_key(currentElement, "endTime")) {
+        if (!json_key_as_double(currentElement, "endTime", &(currentObject->data.camera.endTime))) {
+            return 0;
+        }
+    } else {
+        currentObject->data.camera.endTime = 0;
+    }
+    if (json_has_key(currentElement, "frameRate")) {
+        if (!json_key_as_double(currentElement, "frameRate", &(currentObject->data.camera.frameRate))) {
+            return 0;
+        }
+    } else {
+        currentObject->data.camera.frameRate = 1;
+    }
+
+    return 1;
+}
+
+int scene_build_sphere(JsonElementRef currentElement, SceneObjectRef currentObject) {
+
+    JsonElementRef subElement;
+
+    currentObject->type = SCENE_OBJECT_SPHERE;
+
+    if (!json_has_key(currentElement, "color")) {
+        fprintf(stderr, "Error: Invalid scene json. A sphere must have a color.\n");
+        return 0;
+    }
+    if (!json_key(currentElement, "color", &subElement)) {
+        return 0;
+    }
+    if (!scene_populate_color(subElement, &(currentObject->color))) {
+        return 0;
+    }
+
+    if (!json_has_key(currentElement, "position")) {
+        fprintf(stderr, "Error: Invalid scene json. A sphere must have a position.\n");
+        return 0;
+    }
+    if (!json_key(currentElement, "position", &subElement)) {
+        return 0;
+    }
+    if (!scene_populate_vector(subElement, &(currentObject->pos))) {
+        return 0;
+    }
+
+    if (!json_has_key(currentElement, "radius")) {
+        fprintf(stderr, "Error: Invalid scene json. A sphere must have a radius.\n");
+        return 0;
+    }
+    if (!json_key_as_double(currentElement, "radius", &(currentObject->data.sphere.radius))) {
+        return 0;
+    }
+
+    return 1;
+}
+
+int scene_build_plane(JsonElementRef currentElement, SceneObjectRef currentObject) {
+
+    JsonElementRef subElement;
+
+    currentObject->type = SCENE_OBJECT_PLANE;
+
+    if (!json_has_key(currentElement, "color")) {
+        fprintf(stderr, "Error: Invalid scene json. A plane must have a color.\n");
+        return 0;
+    }
+    if (!json_key(currentElement, "color", &subElement)) {
+        return 0;
+    }
+    if (!scene_populate_color(subElement, &(currentObject->color))) {
+        return 0;
+    }
+
+    if (!json_has_key(currentElement, "position")) {
+        fprintf(stderr, "Error: Invalid scene json. A plane must have a position.\n");
+        return 0;
+    }
+    if (!json_key(currentElement, "position", &subElement)) {
+        return 0;
+    }
+    if (!scene_populate_vector(subElement, &(currentObject->pos))) {
+        return 0;
+    }
+
+    if (!json_has_key(currentElement, "normal")) {
+        fprintf(stderr, "Error: Invalid scene json. A plane must have a normal.\n");
+        return 0;
+    }
+    if (!json_key(currentElement, "normal", &subElement)) {
+        return 0;
+    }
+    if (!scene_populate_vector(subElement, &(currentObject->data.plane.normal))) {
+        return 0;
+    }
+
+    return 1;
+}
+
 int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     printf("Beginning building scene.\n");
@@ -96,129 +228,22 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: Invalid scene json. Only one camera is supported in the scene.\n");
                 return 0;
             }
-            currentObject.type = SCENE_OBJECT_CAMERA;
-
-            if (!json_has_key(currentElement, "width")) {
-                fprintf(stderr, "Error: Invalid scene json. A camera must have a width.\n");
+            if (!scene_build_camera(currentElement, &currentObject)) {
                 return 0;
             }
-            if (!json_key_as_double(currentElement, "width", &(currentObject.data.camera.width))) {
-                return 0;
-            }
-
-            if (!json_has_key(currentElement, "height")) {
-                fprintf(stderr, "Error: Invalid scene json. A camera must have a height.\n");
-                return 0;
-            }
-            if (!json_key_as_double(currentElement, "height", &(currentObject.data.camera.height))) {
-                return 0;
-            }
-
-            if (json_has_key(currentElement, "animated")) {
-                if (!json_key_as_bool(currentElement, "animated", &(currentObject.data.camera.animated))) {
-                    return 0;
-                }
-            } else {
-                currentObject.data.camera.animated = false;
-            }
-            if (json_has_key(currentElement, "startTime")) {
-                if (!json_key_as_double(currentElement, "startTime", &(currentObject.data.camera.startTime))) {
-                    return 0;
-                }
-            } else {
-                currentObject.data.camera.startTime = 0;
-            }
-            if (json_has_key(currentElement, "endTime")) {
-                if (!json_key_as_double(currentElement, "endTime", &(currentObject.data.camera.endTime))) {
-                    return 0;
-                }
-            } else {
-                currentObject.data.camera.endTime = 0;
-            }
-            if (json_has_key(currentElement, "frameRate")) {
-                if (!json_key_as_double(currentElement, "frameRate", &(currentObject.data.camera.frameRate))) {
-                    return 0;
-                }
-            } else {
-                currentObject.data.camera.frameRate = 1;
-            }
-
             sceneOut->camera = currentObject;
             cameraFound = true;
-
             printf("Object %d/%d of type Camera loaded.\n", i+1, jsonRoot->count);
             continue;
         } else if (strcmp(type, "sphere") == 0) {
-            currentObject.type = SCENE_OBJECT_SPHERE;
-
-            if (!json_has_key(currentElement, "color")) {
-                fprintf(stderr, "Error: Invalid scene json. A sphere must have a color.\n");
+            if (!scene_build_sphere(currentElement, &currentObject)) {
                 return 0;
             }
-            if (!json_key(currentElement, "color", &subElement)) {
-                return 0;
-            }
-            if (!scene_populate_color(subElement, &currentObject.color)) {
-                return 0;
-            }
-
-            if (!json_has_key(currentElement, "position")) {
-                fprintf(stderr, "Error: Invalid scene json. A sphere must have a position.\n");
-                return 0;
-            }
-            if (!json_key(currentElement, "position", &subElement)) {
-                return 0;
-            }
-            if (!scene_populate_vector(subElement, &currentObject.pos)) {
-                return 0;
-            }
-
-            if (!json_has_key(currentElement, "radius")) {
-                fprintf(stderr, "Error: Invalid scene json. A sphere must have a radius.\n");
-                return 0;
-            }
-            if (!json_key_as_double(currentElement, "radius", &currentObject.data.sphere.radius)) {
-                return 0;
-            }
-
             printf("Object %d/%d of type Sphere loaded.\n", i+1, jsonRoot->count);
-
         } else if (strcmp(type, "plane") == 0) {
-            currentObject.type = SCENE_OBJECT_PLANE;
-
-            if (!json_has_key(currentElement, "color")) {
-                fprintf(stderr, "Error: Invalid scene json. A plane must have a color.\n");
+            if (!scene_build_plane(currentElement, &currentObject)) {
                 return 0;
             }
-            if (!json_key(currentElement, "color", &subElement)) {
-                return 0;
-            }
-            if (!scene_populate_color(subElement, &currentObject.color)) {
-                return 0;
-            }
-
-            if (!json_has_key(currentElement, "position")) {
-                fprintf(stderr, "Error: Invalid scene json. A plane must have a position.\n");
-                return 0;
-            }
-            if (!json_key(currentElement, "position", &subElement)) {
-                return 0;
-            }
-            if (!scene_populate_vector(subElement, &currentObject.pos)) {
-                return 0;
-            }
-
-            if (!json_has_key(currentElement, "normal")) {
-                fprintf(stderr, "Error: Invalid scene json. A plane must have a normal.\n");
-                return 0;
-            }
-            if (!json_key(currentElement, "normal", &subElement)) {
-                return 0;
-            }
-            if (!scene_populate_vector(subElement, &currentObject.data.plane.normal)) {
-                return 0;
-            }
-
             printf("Object %d/%d of type Plane loaded.\n", i+1, jsonRoot->count);
 
         } else {
