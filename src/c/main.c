@@ -10,9 +10,10 @@ int displayUsage();
 
 int main(int argc, char* argv[]) {
 
-    int width, height;
+    int width, height, frameCount;
     char* jsonFilename;
     char* outputFilename;
+    char* frameFilename;
     FILE *filePointer;
     JsonElement rootElement;
     Scene scene;
@@ -76,6 +77,13 @@ int main(int argc, char* argv[]) {
         return displayUsage();
     }
     printf("Image buffer created.\n");
+
+    // Calculate number of frames
+    if (scene.camera.data.camera.animated) {
+        frameCount = (int)ceil((scene.camera.data.camera.endTime - scene.camera.data.camera.startTime) * scene.camera.data.camera.frameRate);
+    } else {
+        frameCount = 1;
+    }
 
     // Perform raycasting
     if (!raycast_image(&image, &scene)) {

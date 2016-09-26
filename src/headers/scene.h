@@ -12,6 +12,10 @@
 typedef struct {
     double width;
     double height;
+    bool animated;
+    double startTime;
+    double endTime;
+    double frameRate;
 } SceneCamera;
 typedef SceneCamera* SceneCameraRef;
 

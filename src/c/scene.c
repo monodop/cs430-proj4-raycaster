@@ -114,6 +114,35 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 return 0;
             }
 
+            if (json_has_key(currentElement, "animated")) {
+                if (!json_key_as_bool(currentElement, "animated", &(currentObject.data.camera.animated))) {
+                    return 0;
+                }
+            } else {
+                currentObject.data.camera.animated = false;
+            }
+            if (json_has_key(currentElement, "startTime")) {
+                if (!json_key_as_double(currentElement, "startTime", &(currentObject.data.camera.startTime))) {
+                    return 0;
+                }
+            } else {
+                currentObject.data.camera.startTime = 0;
+            }
+            if (json_has_key(currentElement, "endTime")) {
+                if (!json_key_as_double(currentElement, "endTime", &(currentObject.data.camera.endTime))) {
+                    return 0;
+                }
+            } else {
+                currentObject.data.camera.endTime = 0;
+            }
+            if (json_has_key(currentElement, "frameRate")) {
+                if (!json_key_as_double(currentElement, "frameRate", &(currentObject.data.camera.frameRate))) {
+                    return 0;
+                }
+            } else {
+                currentObject.data.camera.frameRate = 1;
+            }
+
             sceneOut->camera = currentObject;
             cameraFound = true;
 
