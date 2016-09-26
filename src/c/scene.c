@@ -181,6 +181,42 @@ int scene_build_plane(JsonElementRef currentElement, SceneObjectRef currentObjec
     return 1;
 }
 
+int scene_build_object(JsonElementRef currentElement, SceneRef scene, char* type, bool* cameraFound,
+                       int i, int* o_i, int objectCount) {
+
+    SceneObject currentObject;
+
+    if (strcmp(type, "camera") == 0) {
+        if (*cameraFound) {
+            fprintf(stderr, "Error: Invalid scene json. Only one camera is supported in the scene.\n");
+            return 0;
+        }
+        if (!scene_build_camera(currentElement, &currentObject)) {
+            return 0;
+        }
+        scene->camera = currentObject;
+        *cameraFound = true;
+        printf("Object %d/%d of type Camera loaded.\n", i+1, objectCount);
+        return 1;
+    } else if (strcmp(type, "sphere") == 0) {
+        if (!scene_build_sphere(currentElement, &currentObject)) {
+            return 0;
+        }
+        printf("Object %d/%d of type Sphere loaded.\n", i+1, objectCount);
+    } else if (strcmp(type, "plane") == 0) {
+        if (!scene_build_plane(currentElement, &currentObject)) {
+            return 0;
+        }
+        printf("Object %d/%d of type Plane loaded.\n", i+1, objectCount);
+
+    } else {
+        fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
+        return 0;
+    }
+    scene->objects[(*o_i)++] = currentObject;
+    return 1;
+}
+
 int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     printf("Beginning building scene.\n");
@@ -220,37 +256,16 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             return 0;
         }
 
+
+
         if (!json_key_as_string(currentElement, "type", &type)) {
             return 0;
         }
-        if (strcmp(type, "camera") == 0) {
-            if (cameraFound) {
-                fprintf(stderr, "Error: Invalid scene json. Only one camera is supported in the scene.\n");
-                return 0;
-            }
-            if (!scene_build_camera(currentElement, &currentObject)) {
-                return 0;
-            }
-            sceneOut->camera = currentObject;
-            cameraFound = true;
-            printf("Object %d/%d of type Camera loaded.\n", i+1, jsonRoot->count);
-            continue;
-        } else if (strcmp(type, "sphere") == 0) {
-            if (!scene_build_sphere(currentElement, &currentObject)) {
-                return 0;
-            }
-            printf("Object %d/%d of type Sphere loaded.\n", i+1, jsonRoot->count);
-        } else if (strcmp(type, "plane") == 0) {
-            if (!scene_build_plane(currentElement, &currentObject)) {
-                return 0;
-            }
-            printf("Object %d/%d of type Plane loaded.\n", i+1, jsonRoot->count);
 
-        } else {
-            fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
+        if (!scene_build_object(currentElement, sceneOut, type, &cameraFound, i, &o_i, jsonRoot->count)) {
             return 0;
         }
-        sceneOut->objects[o_i++] = currentObject;
+
     }
 
     if (!cameraFound) {
