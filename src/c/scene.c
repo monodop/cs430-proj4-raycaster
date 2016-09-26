@@ -347,7 +347,7 @@ int scene_prep_frame(SceneRef sceneOut, double t) {
                 break;
             case SCENE_OBJECT_SPHERE:
                 currentObject->data.sphere.radius =
-                        interpolate(INTERPOLATE_STEPWISE_NEAREST, currentObject->tCount, currentObject->tValues, currentObject->data.sphere.radiusKfs, t);
+                        interpolate(INTERPOLATE_LINEAR, currentObject->tCount, currentObject->tValues, currentObject->data.sphere.radiusKfs, t);
                 break;
             case SCENE_OBJECT_PLANE:
                 break;

@@ -6,7 +6,8 @@
 #define CS430_PROJ2_RAYCASTER_INTERPOLATE_H
 
 typedef enum {
-    INTERPOLATE_STEPWISE_NEAREST
+    INTERPOLATE_STEPWISE_NEAREST,
+    INTERPOLATE_LINEAR,
 } InterpolationType;
 
 double interpolate(InterpolationType iType, int tCount, double* tValues, double* yValues, double t);
