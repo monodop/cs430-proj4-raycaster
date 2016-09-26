@@ -112,8 +112,8 @@ void* raycast_worker(void* arg) {
     SceneRef scene = worker->args.scene;
     PpmImageRef image = worker->args.image;
     Vector vp_center = { .x = 0, .y = 0, .z = 1 };
-    double vp_width = scene->camera.data.camera.width;
-    double vp_height = scene->camera.data.camera.height;
+    double vp_width = scene->camera->data.camera.width;
+    double vp_height = scene->camera->data.camera.height;
     int img_width = image->header.imageWidth;
     int img_height = image->header.imageHeight;
 

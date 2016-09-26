@@ -21,6 +21,7 @@ typedef SceneCamera* SceneCameraRef;
 
 typedef struct {
     double radius;
+    double* radiusKfs;
 } SceneSphere;
 typedef SceneSphere* SceneSphereRef;
 
@@ -39,6 +40,8 @@ typedef struct {
     SceneObjectType type;
     Vector pos;
     Color color;
+    double* tValues;
+    int tCount;
     union {
         SceneCamera camera;
         SceneSphere sphere;
@@ -49,7 +52,7 @@ typedef SceneObject* SceneObjectRef;
 
 typedef struct {
     int objectCount;
-    SceneObject camera;
+    SceneObjectRef camera;
     SceneObjectRef objects;
 } Scene;
 typedef Scene* SceneRef;

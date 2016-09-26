@@ -80,8 +80,8 @@ int main(int argc, char* argv[]) {
     printf("Image buffer created.\n");
 
     // Calculate number of frames
-    if (scene.camera.data.camera.animated) {
-        frameCount = (int)ceil((scene.camera.data.camera.endTime - scene.camera.data.camera.startTime) * scene.camera.data.camera.frameRate) + 1;
+    if (scene.camera->data.camera.animated) {
+        frameCount = (int)ceil((scene.camera->data.camera.endTime - scene.camera->data.camera.startTime) * scene.camera->data.camera.frameRate) + 1;
         if (frameCount < 0) {
             fprintf(stderr, "Error: startTime must be greater than endTime. Render cancelled.\n");
             return 0;
@@ -103,7 +103,7 @@ int main(int argc, char* argv[]) {
 
         printf("Rendering frame %d of %d.\n", i, frameCount);
 
-        if (scene.camera.data.camera.animated) {
+        if (scene.camera->data.camera.animated) {
             sprintf(frameFilename + dotIndex + 1, "%0*d", padding, i);
             frameFilename[dotIndex + padding + 1] = '.';
         }

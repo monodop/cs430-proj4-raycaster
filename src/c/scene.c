@@ -181,30 +181,27 @@ int scene_build_plane(JsonElementRef currentElement, SceneObjectRef currentObjec
     return 1;
 }
 
-int scene_build_object(JsonElementRef currentElement, SceneRef scene, char* type, bool* cameraFound,
-                       int i, int* o_i, int objectCount) {
-
-    SceneObject currentObject;
+int scene_build_object(JsonElementRef currentElement, SceneRef scene, SceneObjectRef currentObject, char* type,
+                       bool* cameraFound, int i, int objectCount) {
 
     if (strcmp(type, "camera") == 0) {
         if (*cameraFound) {
             fprintf(stderr, "Error: Invalid scene json. Only one camera is supported in the scene.\n");
             return 0;
         }
-        if (!scene_build_camera(currentElement, &currentObject)) {
+        if (!scene_build_camera(currentElement, currentObject)) {
             return 0;
         }
         scene->camera = currentObject;
         *cameraFound = true;
         printf("Object %d/%d of type Camera loaded.\n", i+1, objectCount);
-        return 1;
     } else if (strcmp(type, "sphere") == 0) {
-        if (!scene_build_sphere(currentElement, &currentObject)) {
+        if (!scene_build_sphere(currentElement, currentObject)) {
             return 0;
         }
         printf("Object %d/%d of type Sphere loaded.\n", i+1, objectCount);
     } else if (strcmp(type, "plane") == 0) {
-        if (!scene_build_plane(currentElement, &currentObject)) {
+        if (!scene_build_plane(currentElement, currentObject)) {
             return 0;
         }
         printf("Object %d/%d of type Plane loaded.\n", i+1, objectCount);
@@ -213,7 +210,6 @@ int scene_build_object(JsonElementRef currentElement, SceneRef scene, char* type
         fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", type);
         return 0;
     }
-    scene->objects[(*o_i)++] = currentObject;
     return 1;
 }
 
@@ -222,8 +218,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
     printf("Beginning building scene.\n");
 
     JsonElementRef currentElement, subElement;
-    SceneObject currentObject;
-    int i, o_i;
+    int i, j, frameCount;
     char* type;
     bool cameraFound = false;
 
@@ -232,7 +227,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
         return 0;
     }
 
-    sceneOut->objectCount = jsonRoot->count - 1;
+    sceneOut->objectCount = jsonRoot->count;
     sceneOut->objects = malloc(sizeof(SceneObject) * sceneOut->objectCount);
     if (sceneOut->objects == NULL) {
         fprintf(stderr, "Error: Unable to allocate enough memory to store %d scene objects.\n", sceneOut->objectCount);
@@ -241,7 +236,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     printf("%d objects in scene detected.\n", jsonRoot->count);
 
-    for (i = 0, o_i = 0; i < jsonRoot->count; i++) {
+    for (i = 0; i < jsonRoot->count; i++) {
 
         if (!json_index(jsonRoot, i, &currentElement)) {
             return 0;
@@ -256,14 +251,30 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             return 0;
         }
 
-
-
         if (!json_key_as_string(currentElement, "type", &type)) {
             return 0;
         }
 
-        if (!scene_build_object(currentElement, sceneOut, type, &cameraFound, i, &o_i, jsonRoot->count)) {
-            return 0;
+        if (json_has_key(currentElement, "frames")) {
+            if (!json_key(currentElement, "frames", &currentElement)) {
+                return 0;
+            }
+            if (currentElement->type != JSON_ARRAY || currentElement->count == 0) {
+                fprintf(stderr, "Error: frames must be an array of scene objects.\n");
+                return 0;
+            }
+            for (j = 0; j < currentElement->count; j++) {
+                if (!json_index(currentElement, j, &subElement)) {
+                    return 0;
+                }
+                if (!scene_build_object(subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, i, jsonRoot->count)) {
+                    return 0;
+                }
+            }
+        } else {
+            if (!scene_build_object(currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, i, jsonRoot->count)) {
+                return 0;
+            }
         }
 
     }
