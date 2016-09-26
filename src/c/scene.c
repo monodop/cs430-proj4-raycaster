@@ -4,6 +4,7 @@
 
 #include <string.h>
 #include "../headers/scene.h"
+#include "../headers/interpolate.h"
 
 int scene_populate_color(JsonElementRef colorRoot, ColorRef color) {
     int i;
@@ -280,6 +281,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: frames must be an array of scene objects.\n");
                 return 0;
             }
+            sceneOut->objects[i].tCount = currentElement->count;
             if (!scene_build_malloc_kfs(sceneOut->objects + i, type, currentElement->count)) {
                 fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
@@ -302,6 +304,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 }
             }
         } else {
+            sceneOut->objects[i].tCount = 1;
             if (!scene_build_malloc_kfs(sceneOut->objects + i, type, 1)) {
                 fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
@@ -327,6 +330,29 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
     }
 
     printf("Completed building scene.\n");
+
+    return 1;
+}
+
+int scene_prep_frame(SceneRef sceneOut, double t) {
+    int i;
+    SceneObjectRef currentObject;
+
+    for (i = 0; i < sceneOut->objectCount; i++) {
+
+        currentObject = sceneOut->objects + i;
+
+        switch(currentObject->type) {
+            case SCENE_OBJECT_CAMERA:
+                break;
+            case SCENE_OBJECT_SPHERE:
+                currentObject->data.sphere.radius =
+                        interpolate(INTERPOLATE_STEPWISE_NEAREST, currentObject->tCount, currentObject->tValues, currentObject->data.sphere.radiusKfs, t);
+                break;
+            case SCENE_OBJECT_PLANE:
+                break;
+        }
+    }
 
     return 1;
 }

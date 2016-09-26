@@ -103,10 +103,19 @@ int main(int argc, char* argv[]) {
 
         printf("Rendering frame %d of %d.\n", i, frameCount);
 
+        // Calculate filename for frame
         if (scene.camera->data.camera.animated) {
             sprintf(frameFilename + dotIndex + 1, "%0*d", padding, i);
             frameFilename[dotIndex + padding + 1] = '.';
         }
+
+        // Prep frame
+        double t = scene.camera->data.camera.startTime + (i-1) * (scene.camera->data.camera.endTime - scene.camera->data.camera.startTime) / (frameCount-1);
+        if (!scene_prep_frame(&scene, t)) {
+            fprintf(stderr, "Error: Unable to prepare the frame. Render cancelled.\n");
+            return displayUsage();
+        }
+
         // Perform raycasting
         if (!raycast_image(&image, &scene)) {
             fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");

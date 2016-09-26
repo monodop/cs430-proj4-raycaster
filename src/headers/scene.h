@@ -65,4 +65,6 @@ typedef Scene* SceneRef;
  */
 int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut);
 
+int scene_prep_frame(SceneRef sceneOut, double t);
+
 #endif //CS430_PROJ2_RAYCASTER_SCENE_H
