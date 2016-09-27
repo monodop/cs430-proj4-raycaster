@@ -196,8 +196,7 @@ int scene_populate_vector(JsonElementRef vectorRoot, VectorRef vector) {
     return 1;
 }
 
-int scene_build_object(JsonElementRef staticElement, JsonElementRef animatedElement, SceneRef scene, SceneObjectRef currentObject, char* type,
-                       bool* cameraFound, int j) {
+int scene_build_object(JsonElementRef staticElement, JsonElementRef animatedElement, SceneObjectRef currentObject, char* type, int j) {
 
     SceneObjectMetadata metadata[32];
     SceneObjectMetadata m;
@@ -290,28 +289,28 @@ int scene_build_object(JsonElementRef staticElement, JsonElementRef animatedElem
             switch (m.type) {
                 case SEMT_DOUBLE:
                     if (m.canAnimate) {
-                        (*m.kfs.d[j]) = m.defaultValue.d;
+                        *(*m.kfs.d + j) = m.defaultValue.d;
                     } else {
                         (*m.value.d) = m.defaultValue.d;
                     }
                     break;
                 case SEMT_BOOL:
                     if (m.canAnimate) {
-                        (*m.kfs.bool[j]) = m.defaultValue.bool;
+                        *(*m.kfs.bool + j) = m.defaultValue.bool;
                     } else {
                         (*m.value.bool) = m.defaultValue.bool;
                     }
                     break;
                 case SEMT_COLOR:
                     if (m.canAnimate) {
-                        (*m.kfs.col[j]) = m.defaultValue.col;
+                        *(*m.kfs.col + j) = m.defaultValue.col;
                     } else {
                         (*m.value.col) = m.defaultValue.col;
                     }
                     break;
                 case SEMT_VECTOR:
                     if (m.canAnimate) {
-                        (*m.kfs.vec[j]) = m.defaultValue.vec;
+                        *(*m.kfs.vec + j) = m.defaultValue.vec;
                     } else {
                         (*m.value.vec) = m.defaultValue.vec;
                     }
@@ -319,15 +318,6 @@ int scene_build_object(JsonElementRef staticElement, JsonElementRef animatedElem
             }
         }
 
-    }
-
-    if (currentObject->type == SCENE_OBJECT_CAMERA) {
-        if (*cameraFound) {
-            fprintf(stderr, "Error: Only one camera may be provided. Unable to proceed.\n");
-            return 0;
-        }
-        *cameraFound = true;
-        scene->camera = currentObject;
     }
 
     return 1;
@@ -451,19 +441,29 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                     return 0;
                 }
 
-                if (!scene_build_object(currentElement, subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, j)) {
+                if (!scene_build_object(currentElement, subElement, sceneOut->objects + i, type, j)) {
                     return 0;
                 }
             }
+
         } else {
             sceneOut->objects[i].tCount = 1;
             if (!scene_build_malloc_kfs(sceneOut->objects + i, type, 1)) {
                 fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
             }
-            if (!scene_build_object(currentElement, currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, 0)) {
+            if (!scene_build_object(currentElement, currentElement, sceneOut->objects + i, type, 0)) {
                 return 0;
             }
+        }
+
+        if (sceneOut->objects[i].type == SCENE_OBJECT_CAMERA) {
+            if (cameraFound) {
+                fprintf(stderr, "Error: Only one camera may be provided. Unable to proceed.\n");
+                return 0;
+            }
+            cameraFound = true;
+            sceneOut->camera = sceneOut->objects + i;
         }
 
         if (strcmp(type, "camera") == 0) {
