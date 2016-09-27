@@ -39,6 +39,12 @@ double interpolate_linear(int tCount, double* tValues, double* yValues, double t
         return yValues[0];
     }
 
+    if (t <= tValues[0]) {
+        return yValues[0];
+    } else if (t >= tValues[tCount-1]) {
+        return yValues[tCount-1];
+    }
+
     for (i = 1; i < tCount; i++) {
         nextI = i;
         nextT = tValues[i];
