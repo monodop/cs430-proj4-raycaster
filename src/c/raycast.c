@@ -139,7 +139,7 @@ void* raycast_worker(void* arg) {
         point.z = vp_center.z;
 
         // Create ray
-        ray.pos = (Vector) { .x = 0, .y = 0, .z = 0 };
+        ray.pos = scene->camera->pos;
         ray.dir = vec_unit(point);
 
         // Shoot ray
