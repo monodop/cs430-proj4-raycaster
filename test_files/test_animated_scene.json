@@ -6,7 +6,7 @@
     "animated": true,
     "startTime": 0,
     "endTime": 5,
-    "frameRate": 2
+    "frameRate": 30
   },
   {
     "type": "sphere",
@@ -19,7 +19,7 @@
       },
       {
         "time": 5,
-        "color": [1.0, 1.0, 0],
+        "color": [1.0, 0.0, 1.0],
         "position": [1.2, 2, 10],
         "radius": 1
       }
@@ -27,9 +27,20 @@
   },
   {
     "type": "sphere",
-    "color": [0.7, 0, 1.0],
-    "position": [1.5, 1.5, 9.5],
-    "radius": 0.5
+    "frames": [
+      {
+        "time": 1,
+        "color": [0.7, 0, 1.0],
+        "position": [1.5, 1.5, 9.5],
+        "radius": 0.5
+      },
+      {
+        "time": 4,
+        "color": [0.7, 0, 1.0],
+        "position": [1.5, 1.5, 4.5],
+        "radius": 0.5
+      }
+    ]
   },
   {
     "type": "sphere",
@@ -39,9 +50,20 @@
   },
   {
     "type": "plane",
-    "color": [0.2, 0.6, 1.0],
-    "position": [0, 1, 10],
-    "normal": [0, 1, 1]
+    "frames": [
+      {
+        "time": 0,
+        "color": [0.2, 0.6, 1.0],
+        "position": [0, 1, 10],
+        "normal": [0, 1, 1]
+      },
+      {
+        "time": 5,
+        "color": [1.0, 0.0, 0.0],
+        "position": [0, 1, 10],
+        "normal": [0, 1, 1]
+      }
+    ]
   },
   {
     "type": "plane",

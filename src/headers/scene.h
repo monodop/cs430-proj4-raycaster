@@ -16,6 +16,9 @@ typedef struct {
     double startTime;
     double endTime;
     double frameRate;
+
+    double* widthKfs;
+    double* heightKfs;
 } SceneCamera;
 typedef SceneCamera* SceneCameraRef;
 
@@ -27,6 +30,7 @@ typedef SceneSphere* SceneSphereRef;
 
 typedef struct {
     Vector normal;
+    Vector* normalKfs;
 } ScenePlane;
 typedef ScenePlane* ScenePlaneRef;
 
@@ -47,6 +51,8 @@ typedef struct {
         SceneSphere sphere;
         ScenePlane plane;
     } data;
+    Vector* posKfs;
+    Color* colorKfs;
 } SceneObject;
 typedef SceneObject* SceneObjectRef;
 

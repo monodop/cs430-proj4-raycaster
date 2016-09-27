@@ -48,17 +48,17 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             .type = SEMT_VECTOR,
             .jsonKeyName = "position",
             .required = true,
-            .canAnimate = false,
+            .canAnimate = true,
             .value.vec = &(object->pos),
-            .kfs.vec = NULL
+            .kfs.vec = &(object->posKfs)
     };
     metadata[i++] = (SceneObjectMetadata) {
             .type = SEMT_COLOR,
             .jsonKeyName = "color",
             .required = true,
-            .canAnimate = false,
+            .canAnimate = true,
             .value.col = &(object->color),
-            .kfs.col = NULL
+            .kfs.col = &(object->colorKfs)
     };
 
     switch (object->type) {
@@ -71,15 +71,17 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .type = SEMT_DOUBLE,
                     .jsonKeyName = "width",
                     .required = true,
-                    .canAnimate = false,
-                    .value.d = &(object->data.camera.width)
+                    .canAnimate = true,
+                    .value.d = &(object->data.camera.width),
+                    .kfs.d = &(object->data.camera.widthKfs)
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
                     .jsonKeyName = "height",
                     .required = true,
-                    .canAnimate = false,
-                    .value.d = &(object->data.camera.height)
+                    .canAnimate = true,
+                    .value.d = &(object->data.camera.height),
+                    .kfs.d = &(object->data.camera.heightKfs)
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_BOOL,
@@ -120,7 +122,8 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .jsonKeyName = "normal",
                     .required = true,
                     .canAnimate = false,
-                    .value.vec = &(object->data.plane.normal)
+                    .value.vec = &(object->data.plane.normal),
+                    .kfs.vec = &(object->data.plane.normalKfs)
             };
             break;
         case SCENE_OBJECT_SPHERE:
