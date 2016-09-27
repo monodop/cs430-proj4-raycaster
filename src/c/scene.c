@@ -121,7 +121,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .type = SEMT_VECTOR,
                     .jsonKeyName = "normal",
                     .required = true,
-                    .canAnimate = false,
+                    .canAnimate = true,
                     .value.vec = &(object->data.plane.normal),
                     .kfs.vec = &(object->data.plane.normalKfs)
             };
@@ -196,12 +196,12 @@ int scene_populate_vector(JsonElementRef vectorRoot, VectorRef vector) {
     return 1;
 }
 
-int scene_build_object(JsonElementRef currentElement, SceneRef scene, SceneObjectRef currentObject, char* type,
+int scene_build_object(JsonElementRef staticElement, JsonElementRef animatedElement, SceneRef scene, SceneObjectRef currentObject, char* type,
                        bool* cameraFound, int j) {
 
     SceneObjectMetadata metadata[32];
     SceneObjectMetadata m;
-    JsonElementRef subElement;
+    JsonElementRef subElement, currentElement;
     int i, metadataCount;
 
     if (!scene_char_to_object_type(type, &(currentObject->type))) {
@@ -213,8 +213,16 @@ int scene_build_object(JsonElementRef currentElement, SceneRef scene, SceneObjec
 
         m = metadata[i];
 
+        // Allow the function to decide between the frames list and the root level objects
+        currentElement = NULL;
+        if (m.canAnimate && json_has_key(animatedElement, m.jsonKeyName)) {
+            currentElement = animatedElement;
+        } else if (json_has_key(staticElement, m.jsonKeyName)) {
+            currentElement = staticElement;
+        }
+
         // Check if key exists
-        if (json_has_key(currentElement, m.jsonKeyName)) {
+        if (currentElement != NULL) {
 
             switch (m.type) {
                 case SEMT_DOUBLE:
@@ -379,7 +387,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
 
     printf("Beginning building scene.\n");
 
-    JsonElementRef currentElement, subElement;
+    JsonElementRef currentElement, framesElement, subElement;
     int i, j;
     char* type;
     bool cameraFound = false;
@@ -418,20 +426,20 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
         }
 
         if (json_has_key(currentElement, "frames")) {
-            if (!json_key(currentElement, "frames", &currentElement)) {
+            if (!json_key(currentElement, "frames", &framesElement)) {
                 return 0;
             }
-            if (currentElement->type != JSON_ARRAY || currentElement->count == 0) {
+            if (framesElement->type != JSON_ARRAY || framesElement->count == 0) {
                 fprintf(stderr, "Error: frames must be an array of scene objects.\n");
                 return 0;
             }
-            sceneOut->objects[i].tCount = currentElement->count;
-            if (!scene_build_malloc_kfs(sceneOut->objects + i, type, currentElement->count)) {
+            sceneOut->objects[i].tCount = framesElement->count;
+            if (!scene_build_malloc_kfs(sceneOut->objects + i, type, framesElement->count)) {
                 fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
             }
-            for (j = 0; j < currentElement->count; j++) {
-                if (!json_index(currentElement, j, &subElement)) {
+            for (j = 0; j < framesElement->count; j++) {
+                if (!json_index(framesElement, j, &subElement)) {
                     return 0;
                 }
 
@@ -443,7 +451,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                     return 0;
                 }
 
-                if (!scene_build_object(subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, j)) {
+                if (!scene_build_object(currentElement, subElement, sceneOut, sceneOut->objects + i, type, &cameraFound, j)) {
                     return 0;
                 }
             }
@@ -453,7 +461,7 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
                 fprintf(stderr, "Error: Unable to allocate enough memory to store animation metadata.\n");
                 return 0;
             }
-            if (!scene_build_object(currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, 0)) {
+            if (!scene_build_object(currentElement, currentElement, sceneOut, sceneOut->objects + i, type, &cameraFound, 0)) {
                 return 0;
             }
         }
