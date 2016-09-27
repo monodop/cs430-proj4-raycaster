@@ -116,6 +116,9 @@ int main(int argc, char* argv[]) {
             return displayUsage();
         }
 
+        // Clear image buffer
+        image_fill(&image, (Color) { .r = 0, .g = 0, .b = 0 });
+
         // Perform raycasting
         if (!raycast_image(&image, &scene)) {
             fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");

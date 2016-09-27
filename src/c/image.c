@@ -8,8 +8,6 @@
 
 int image_create(PpmImageRef image, unsigned int width, unsigned int height, Color backgroundColor) {
 
-    int i;
-
     // Setup the header
     image->header.maxVal = 255;
     image->header.ppmType = 6;
@@ -21,10 +19,17 @@ int image_create(PpmImageRef image, unsigned int width, unsigned int height, Col
         return 0;
     }
 
-    // Set the background color
-    for (i = 0; i < width * height; i++) {
-        image->pixels[i] = backgroundColor;
-    }
+    image_fill(image, backgroundColor);
 
     return 1;
+}
+
+void image_fill(PpmImageRef image, Color backgroundColor) {
+
+    int i;
+
+    // Set the background color
+    for (i = 0; i < image->header.imageWidth * image->header.imageHeight; i++) {
+        image->pixels[i] = backgroundColor;
+    }
 }

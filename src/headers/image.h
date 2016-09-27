@@ -34,4 +34,6 @@ typedef PpmImage* PpmImageRef;
  */
 int image_create(PpmImageRef image, unsigned int width, unsigned int height, Color backgroundColor);
 
+void image_fill(PpmImageRef image, Color backgroundColor);
+
 #endif //CS430_PROJ1_IMAGES_IMAGE_H
