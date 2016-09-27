@@ -68,3 +68,34 @@ double interpolate(InterpolationType iType, int tCount, double* tValues, double*
     return 0;
 
 }
+
+Vector interpolate_vector(InterpolationType iType, int tCount, double* tValues, Vector* yValues, double t) {
+    double x_values[tCount], y_values[tCount], z_values[tCount];
+    int i;
+    for (i = 0; i < tCount; i++) {
+        x_values[i] = yValues[i].x;
+        y_values[i] = yValues[i].y;
+        z_values[i] = yValues[i].z;
+    }
+
+    return (Vector) {
+            .x = interpolate(iType, tCount, tValues, x_values, t),
+            .y = interpolate(iType, tCount, tValues, y_values, t),
+            .z = interpolate(iType, tCount, tValues, z_values, t)
+    };
+}
+Color interpolate_color(InterpolationType iType, int tCount, double* tValues, Color* yValues, double t) {
+    double r_values[tCount], g_values[tCount], b_values[tCount];
+    int i;
+    for (i = 0; i < tCount; i++) {
+        r_values[i] = yValues[i].r;
+        g_values[i] = yValues[i].g;
+        b_values[i] = yValues[i].b;
+    }
+
+    return (Color) {
+            .r = interpolate(iType, tCount, tValues, r_values, t),
+            .g = interpolate(iType, tCount, tValues, g_values, t),
+            .b = interpolate(iType, tCount, tValues, b_values, t)
+    };
+}
