@@ -43,6 +43,7 @@ typedef enum {
 typedef struct {
     SceneObjectType type;
     Vector pos;
+    Vector angle;
     Color color;
     double* tValues;
     int tCount;
@@ -52,6 +53,7 @@ typedef struct {
         ScenePlane plane;
     } data;
     Vector* posKfs;
+    Vector* angleKfs;
     Color* colorKfs;
 } SceneObject;
 typedef SceneObject* SceneObjectRef;

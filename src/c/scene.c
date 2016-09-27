@@ -60,6 +60,15 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             .value.col = &(object->color),
             .kfs.col = &(object->colorKfs)
     };
+    metadata[i++] = (SceneObjectMetadata) {
+            .type = SEMT_VECTOR,
+            .jsonKeyName = "angle",
+            .required = false,
+            .canAnimate = true,
+            .value.vec = &(object->angle),
+            .kfs.vec = &(object->angleKfs),
+            .defaultValue.vec = (Vector) {.x=0,.y=0,.z=0}
+    };
 
     switch (object->type) {
         case SCENE_OBJECT_CAMERA:

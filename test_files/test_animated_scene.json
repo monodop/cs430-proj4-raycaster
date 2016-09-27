@@ -3,42 +3,51 @@
     "type": "camera",
     "width": 0.5,
     "height": 0.5,
+    "frames": [
+      {
+        "time": 0,
+        "position": [0,0,0],
+        "angle": [0,0,0]
+      },
+      {
+        "time": 5,
+        "position": [0,0,0],
+        "angle": [0,0,180]
+      }
+    ],
     "animated": true,
     "startTime": 0,
     "endTime": 5,
-    "frameRate": 30
+    "frameRate": 2
   },
   {
     "type": "sphere",
+    "position": [1.2, 2, 10],
     "frames": [
       {
         "time": 0,
         "color": [1.0, 1.0, 0],
-        "position": [1.2, 2, 10],
         "radius": 0.1
       },
       {
         "time": 5,
         "color": [1.0, 0.0, 1.0],
-        "position": [1.2, 2, 10],
         "radius": 1
       }
     ]
   },
   {
     "type": "sphere",
+    "color": [0.7, 0, 1.0],
+    "radius": 0.5,
     "frames": [
       {
         "time": 1,
-        "color": [0.7, 0, 1.0],
-        "position": [1.5, 1.5, 9.5],
-        "radius": 0.5
+        "position": [1.5, 1.5, 9.5]
       },
       {
         "time": 4,
-        "color": [0.7, 0, 1.0],
-        "position": [1.5, 1.5, 4.5],
-        "radius": 0.5
+        "position": [1.5, 1.5, 4.5]
       }
     ]
   },
@@ -50,17 +59,16 @@
   },
   {
     "type": "plane",
+    "position": [0, 1, 10],
     "frames": [
       {
         "time": 0,
         "color": [0.2, 0.6, 1.0],
-        "position": [0, 1, 10],
         "normal": [0, 1, 1]
       },
       {
         "time": 5,
         "color": [1.0, 0.0, 0.0],
-        "position": [0, 1, 10],
         "normal": [0, 1, 1]
       }
     ]

@@ -138,6 +138,9 @@ void* raycast_worker(void* arg) {
         point.y = -(vp_center.y - vp_height/2.0 + pix_height * (y + 0.5));
         point.z = vp_center.z;
 
+        // Rotate camera
+        point = vec_rot(point, scene->camera->angle);
+
         // Create ray
         ray.pos = scene->camera->pos;
         ray.dir = vec_unit(point);
