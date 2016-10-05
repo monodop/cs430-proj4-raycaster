@@ -2,7 +2,11 @@
 
 Performs basic raycasting on a scene and renders the output to a PPM file.
 
-![Example 1](http://i.imgur.com/24n8hOP.gifv "Example 1")
+![](/samples/4k%20spheres.png)
+
+![](/samples/crazy.gif)
+
+[Spinning Cube](http://i.imgur.com/24n8hOP.gifv)
 
 ## Table of Contents
 1. [Build](#build)
@@ -34,7 +38,7 @@ make build
 #### ppmrw
 Builds ppmrw in the project root's /bin/ directory. This target will fail if the /bin/ or /obj/ directories do not exist. This target also does not clean these folders.
 ```
-make ppmrw
+make raycast
 ```
 
 #### clean
