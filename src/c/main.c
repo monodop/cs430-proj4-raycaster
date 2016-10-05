@@ -2,12 +2,15 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <pthread.h>
 #include "../headers/json.h"
 #include "../headers/scene.h"
 #include "../headers/ppm.h"
 #include "../headers/raycast.h"
 
 int displayUsage();
+
+#define WORKER_THREADS 8
 
 int main(int argc, char* argv[]) {
 
@@ -19,6 +22,8 @@ int main(int argc, char* argv[]) {
     JsonElement rootElement;
     Scene scene;
     PpmImage image;
+
+    Worker workers[WORKER_THREADS];
 
     // Validate argument count
     if (argc != 5)
@@ -99,6 +104,14 @@ int main(int argc, char* argv[]) {
         frameFilename = outputFilename;
     }
 
+    // Allocate worker threads
+    if (!raycast_create_workers(workers, &image, &scene, WORKER_THREADS)) {
+        fprintf(stderr, "Error: Could not allocate worker threads. Render cancelled.\n");
+        return displayUsage();
+    }
+    printf("Ray casting workers allocated.\n");
+
+    // Begin render loop
     for (i = 1; i <= frameCount; i++) {
 
         printf("Rendering frame %d of %d.\n", i, frameCount);
@@ -120,7 +133,7 @@ int main(int argc, char* argv[]) {
         image_fill(&image, (Color) { .r = 0, .g = 0, .b = 0 });
 
         // Perform raycasting
-        if (!raycast_image(&image, &scene)) {
+        if (!raycast_image(workers, &image, &scene, WORKER_THREADS)) {
             fprintf(stderr, "Error: Unable to raycast the image. Render cancelled.\n");
             return displayUsage();
         }
@@ -131,6 +144,13 @@ int main(int argc, char* argv[]) {
             return displayUsage();
         }
     }
+
+    // Terminate worker threads
+    if (!raycast_terminate_workers(workers, WORKER_THREADS)) {
+        fprintf(stderr, "Error: Could not terminate worker threads. Render cancelled.\n");
+        return displayUsage();
+    }
+    printf("Ray casting workers terminated.\n");
 
     return 0;
 }
