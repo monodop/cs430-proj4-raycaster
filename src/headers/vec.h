@@ -84,8 +84,8 @@ static inline Vector vec_rot(Vector point, Vector angle) {
     Vector v1, v2, v3, degAngle;
 
     degAngle = (Vector) {
-            .x = deg2rad(angle.x),
-            .y = -deg2rad(angle.y),
+            .x = -deg2rad(angle.x),
+            .y = deg2rad(angle.y),
             .z = -deg2rad(angle.z)
     };
 
