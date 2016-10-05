@@ -30,13 +30,13 @@ Simply open CLion in the root directory and open the project, you can set the bu
 The provided make file provides only a few targets
 
 #### build
-Cleans and then builds ppmrw in the project root's /bin/ directory.
+Cleans and then builds raycast in the project root's /bin/ directory.
 ```
 make build
 ```
 
-#### ppmrw
-Builds ppmrw in the project root's /bin/ directory. This target will fail if the /bin/ or /obj/ directories do not exist. This target also does not clean these folders.
+#### raycast
+Builds raycast in the project root's /bin/ directory. This target will fail if the /bin/ or /obj/ directories do not exist. This target also does not clean these folders.
 ```
 make raycast
 ```
