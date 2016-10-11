@@ -293,12 +293,9 @@ void* raycast_worker(void* arg) {
                 return 0;
             }
 
-            if (pixColor.r > 1)
-                pixColor.r = 1;
-            if (pixColor.g > 1)
-                pixColor.g = 1;
-            if (pixColor.b > 1)
-                pixColor.b = 1;
+            pixColor.r = clamp(0, 1, pixColor.r);
+            pixColor.g = clamp(0, 1, pixColor.g);
+            pixColor.b = clamp(0, 1, pixColor.b);
 
             image->pixels[wxy_to_index(img_width, x, y)] = pixColor;
 

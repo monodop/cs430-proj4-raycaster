@@ -47,4 +47,13 @@ long wxy_to_index(int width, int x, int y);
  */
 void index_to_xwy(long index, int width, int* x, int* y);
 
+/**
+ * Constrains a value between a minimum and maximum value.
+ * @param min The minimum value to return
+ * @param max The maximum value to return
+ * @param val The value to clamp
+ * @return The clamped value
+ */
+double clamp(double min, double max, double val);
+
 #endif //CS430_PROJ1_IMAGES_HELPERS_H

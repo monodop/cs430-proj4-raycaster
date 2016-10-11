@@ -55,7 +55,13 @@ static inline Vector vec_scale(Vector a, double scale) {
 }
 
 static inline Vector vec_unit(Vector a) {
-    return vec_scale(a, 1.0 / vec_mag(a));
+    double mag = vec_mag(a);
+
+    // prevent division by zero
+    if (mag == 0)
+        return (Vector){.x=0,.y=0,.z=0};
+
+    return vec_scale(a, 1.0 / mag);
 }
 
 static inline double vec_dot(Vector a, Vector b) {

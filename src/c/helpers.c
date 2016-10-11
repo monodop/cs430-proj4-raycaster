@@ -68,3 +68,11 @@ void index_to_xwy(long index, int width, int* x, int* y) {
     *x = (int)(index % width);
     *y = (int)(index / width);
 }
+
+double clamp(double min, double max, double val) {
+    if (val < min)
+        return min;
+    if (val > max)
+        return max;
+    return val;
+}
