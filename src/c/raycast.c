@@ -151,6 +151,22 @@ Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector sur
     return out;
 }
 
+Color raycast_angular_attenuation(Color lightColor, double aConstant, Vector lightDirection, Vector testDirection) {
+    Color out = (Color) {.r=1,.g=1,.b=1};
+    double dotted = vec_dot(lightDirection, testDirection);
+
+    if (aConstant == 0)
+        return out;
+    if (dotted <= 0)
+        return (Color) {.r=0,.g=0,.b=0};
+
+    double f = pow(dotted, aConstant);
+    out.r = f * lightColor.r;
+    out.g = f * lightColor.g;
+    out.b = f * lightColor.b;
+    return out;
+}
+
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
 
     Vector hitPos, hitPos2;
@@ -158,7 +174,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     Vector lightRay, lightDirection;
     SceneObjectRef hitObject, hitObject2;
     Color color = (Color) {.r=0,.g=0,.b=0};
-    Color tempColor;
+    Color tempColor, lightColor;
     int i;
 
     // Check for initial hit
@@ -183,8 +199,15 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                 continue;
             }
 
+            lightColor = raycast_angular_attenuation(
+                    scene->objects[i].color,
+                    scene->objects[i].data.light.angularA0,
+                    vec_unit(scene->objects[i].data.light.direction),
+                    vec_scale(lightDirection, -1)
+            );
+
             // Calculate diffuse
-            tempColor = raycast_calculate_diffuse(hitObject->color, scene->objects[i].color, hitNormal, lightDirection);
+            tempColor = raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection);
             color.r += tempColor.r;
             color.g += tempColor.g;
             color.b += tempColor.b;
