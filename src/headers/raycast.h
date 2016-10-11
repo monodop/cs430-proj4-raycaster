@@ -67,10 +67,9 @@ int raycast_image(Worker* workers, PpmImageRef image, SceneRef scene, int thread
  * @param ray - The origin and direction of the ray
  * @param scene - The scene to shoot the ray at
  * @param maxDistance - The maximum distance the ray can shoot
- * @param hitPosition - The position the ray hit
- * @param hitObject - The object the ray hit
+ * @param colorOut - The color the ray hit, including lumination
  * @return 1 if success, 0 if failure
  */
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosition, SceneObjectRef* hitObject);
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut);
 
 #endif //CS430_PROJ2_RAYCASTER_RAYCASTER_H

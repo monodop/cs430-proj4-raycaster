@@ -4,6 +4,7 @@
 
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
+#include "../headers/scene.h"
 
 #include <pthread.h>
 #include <unistd.h>
@@ -90,6 +91,100 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
     return;
 }
 
+int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosition, VectorRef hitNormal, SceneObjectRef* hitObject) {
+
+    Vector bestHit = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
+    Vector bestNormal = (Vector) { .x = 0, .y = 0, .z = 0 };
+    Vector hit;
+    double bestDistance = INFINITY;
+    double distance;
+    SceneObjectRef bestHitObject = NULL;
+
+    // Iterate over the scene
+    for (int i = 0; i < scene->objectCount; i++) {
+        switch (scene->objects[i].type) {
+            case SCENE_OBJECT_SPHERE:
+                // Test sphere intersection
+                sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance);
+                if (distance < bestDistance && distance <= maxDistance) {
+                    bestDistance = distance;
+                    bestHit = hit;
+                    bestNormal = vec_unit(vec_sub(hit, scene->objects[i].pos));
+                    bestHitObject = &(scene->objects[i]);
+                }
+                break;
+            case SCENE_OBJECT_PLANE:
+                // Test plane intersection
+                plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
+                if (distance < bestDistance && distance <= maxDistance) {
+                    bestDistance = distance;
+                    bestHit = hit;
+                    bestNormal = scene->objects[i].data.plane.normal;
+                    bestHitObject = &(scene->objects[i]);
+                }
+            default:
+                // Don't check anything else
+                break;
+        }
+    }
+
+    // Pass back the best hit
+    (*hitPosition) = bestHit;
+    (*hitNormal) = bestNormal;
+    if (bestDistance != INFINITY) {
+        (*hitObject) = bestHitObject;
+    }
+
+    return 1;
+}
+
+Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection) {
+    Color out = (Color) {.r=0,.g=0,.b=0};
+    double dotted = vec_dot(surfaceNormal, lightDirection);
+
+    if (dotted > 0) {
+        out.r = dotted * lightColor.r * surfaceColor.r;
+        out.g = dotted * lightColor.g * surfaceColor.g;
+        out.b = dotted * lightColor.b * surfaceColor.b;
+    }
+
+    return out;
+}
+
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
+
+    Vector hitPos;
+    Vector hitNormal;
+    Color color = (Color) {.r=0,.g=0,.b=0};
+    Color tempColor;
+    SceneObjectRef hitObject;
+    int i;
+
+    // Check for initial hit
+    if (!raycast_intersect(ray, scene, maxDistance, &hitPos, &hitNormal, &hitObject)) {
+        return 0;
+    }
+    if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
+        return 1;
+    }
+
+    for (i = 0; i < scene->objectCount; i++) {
+        if (scene->objects[i].type == SCENE_OBJECT_LIGHT) {
+
+            // Calculate diffuse
+            tempColor = raycast_calculate_diffuse(hitObject->color, scene->objects[i].color, hitNormal, vec_unit(vec_sub(scene->objects[i].pos, hitPos)));
+            color.r += tempColor.r;
+            color.g += tempColor.g;
+            color.b += tempColor.b;
+        }
+    }
+
+    // Save output color
+    *colorOut = color;
+
+    return 1;
+}
+
 void* raycast_worker(void* arg) {
 
     Worker* worker = (Worker*)arg;
@@ -105,9 +200,9 @@ void* raycast_worker(void* arg) {
     double pix_width;
     double pix_height;
 
-    Vector point, hitPos;
+    Vector point;
     Ray ray;
-    SceneObjectRef hitObject;
+    Color pixColor;
 
     long i;
     int x, y;
@@ -158,18 +253,19 @@ void* raycast_worker(void* arg) {
             ray.dir = vec_unit(point);
 
             // Shoot ray
-            if (!raycast_shoot(ray, scene, 100.0, &hitPos, &hitObject)) {
+            if (!raycast_shoot(ray, scene, 100.0, &pixColor)) {
                 fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
                 return 0;
             }
 
-            // No hit detected, make no changes this loop
-            if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
-                continue;
-            }
+            if (pixColor.r > 1)
+                pixColor.r = 1;
+            if (pixColor.g > 1)
+                pixColor.g = 1;
+            if (pixColor.b > 1)
+                pixColor.b = 1;
 
-            // Save hit object's color to the pixel
-            image->pixels[wxy_to_index(img_width, x, y)] = hitObject->color;
+            image->pixels[wxy_to_index(img_width, x, y)] = pixColor;
 
         }
 
@@ -268,49 +364,6 @@ int raycast_image(Worker* workers, PpmImageRef image, SceneRef scene, int thread
 
     printf("100%% rays casted\n");
     printf("Ray casting completed.\n");
-
-    return 1;
-}
-
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosition, SceneObjectRef* hitObject) {
-
-    Vector bestHit = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
-    Vector hit;
-    double bestDistance = INFINITY;
-    double distance;
-    SceneObjectRef bestHitObject = NULL;
-
-    // Iterate over the scene
-    for (int i = 0; i < scene->objectCount; i++) {
-        switch (scene->objects[i].type) {
-            case SCENE_OBJECT_SPHERE:
-                // Test sphere intersection
-                sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance);
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    bestHit = hit;
-                    bestHitObject = &(scene->objects[i]);
-                }
-                break;
-            case SCENE_OBJECT_PLANE:
-                // Test plane intersection
-                plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
-                if (distance < bestDistance) {
-                    bestDistance = distance;
-                    bestHit = hit;
-                    bestHitObject = &(scene->objects[i]);
-                }
-            default:
-                // Don't check anything else
-                break;
-        }
-    }
-
-    // Pass back the best hit
-    (*hitPosition) = bestHit;
-    if (bestDistance != INFINITY) {
-        (*hitObject) = bestHitObject;
-    }
 
     return 1;
 }
