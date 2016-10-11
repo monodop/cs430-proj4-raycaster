@@ -106,7 +106,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
             case SCENE_OBJECT_SPHERE:
                 // Test sphere intersection
                 sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance);
-                if (distance < bestDistance && distance <= maxDistance) {
+                if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
                     bestDistance = distance;
                     bestHit = hit;
                     bestNormal = vec_unit(vec_sub(hit, scene->objects[i].pos));
@@ -116,7 +116,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
             case SCENE_OBJECT_PLANE:
                 // Test plane intersection
                 plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
-                if (distance < bestDistance && distance <= maxDistance) {
+                if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
                     bestDistance = distance;
                     bestHit = hit;
                     bestNormal = scene->objects[i].data.plane.normal;
@@ -153,11 +153,12 @@ Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector sur
 
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
 
-    Vector hitPos;
-    Vector hitNormal;
+    Vector hitPos, hitPos2;
+    Vector hitNormal, hitNormal2;
+    Vector lightRay, lightDirection;
+    SceneObjectRef hitObject, hitObject2;
     Color color = (Color) {.r=0,.g=0,.b=0};
     Color tempColor;
-    SceneObjectRef hitObject;
     int i;
 
     // Check for initial hit
@@ -171,8 +172,19 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     for (i = 0; i < scene->objectCount; i++) {
         if (scene->objects[i].type == SCENE_OBJECT_LIGHT) {
 
+            lightRay = vec_sub(scene->objects[i].pos, hitPos);
+            lightDirection = vec_unit(lightRay);
+
+            // Ignore if a shadow
+            if (!raycast_intersect((Ray){.pos=hitPos,.dir=lightDirection}, scene, vec_mag(lightRay), &hitPos2, &hitNormal2, &hitObject2)) {
+                return 0;
+            }
+            if (hitPos2.x != INFINITY && hitPos2.y != INFINITY && hitPos2.z != INFINITY) {
+                continue;
+            }
+
             // Calculate diffuse
-            tempColor = raycast_calculate_diffuse(hitObject->color, scene->objects[i].color, hitNormal, vec_unit(vec_sub(scene->objects[i].pos, hitPos)));
+            tempColor = raycast_calculate_diffuse(hitObject->color, scene->objects[i].color, hitNormal, lightDirection);
             color.r += tempColor.r;
             color.g += tempColor.g;
             color.b += tempColor.b;
