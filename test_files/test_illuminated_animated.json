@@ -1,0 +1,64 @@
+[
+  {
+    "type": "camera",
+    "width": 0.75,
+    "height": 0.75,
+    "startTime": 0,
+    "endTime": 5,
+    "animated": true,
+    "frameRate": 2
+  },
+  {
+    "type": "sphere",
+    "color": [1.0, 1.0, 0],
+    "position": [0.2, 2, 10],
+    "radius": 1
+  },
+  {
+    "type": "sphere",
+    "color": [0.7, 0, 1.0],
+    "position": [0.5, 1.5, 9.5],
+    "radius": 0.5
+  },
+  {
+    "type": "sphere",
+    "color": [0.5, 0, 0],
+    "position": [0.2, 1.5, 9.4],
+    "radius": 0.3
+  },
+  {
+    "type": "plane",
+    "color": [0.2, 0.6, 1.0],
+    "position": [2, 0, 0],
+    "normal": [-1, 0, 0]
+  },
+  {
+    "type": "plane",
+    "color": [0, 0.6, 0],
+    "position": [0, -1, 0],
+    "normal": [0, 1, 0]
+  },
+  {
+    "type": "plane",
+    "color": [0, 0.1, 0],
+    "position": [0, 0, 11.5],
+    "normal": [0, 0, -1]
+  },
+  {
+    "type": "light",
+    "color": [10.0, 6.0, 6.0],
+    "radial-a2": 0,
+    "radial-a1": 0,
+    "radial-a0": 10,
+    "frames": [
+      {
+        "time": 0,
+        "position": [-1, 8, 1]
+      },
+      {
+        "time": 5,
+        "position": [-2, -0.5, -2]
+      }
+    ]
+  }
+]
