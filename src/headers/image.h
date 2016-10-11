@@ -5,10 +5,7 @@
 #ifndef CS430_PROJ1_IMAGES_IMAGE_H
 #define CS430_PROJ1_IMAGES_IMAGE_H
 
-typedef struct {
-    double r, g, b;
-} Color;
-typedef Color* ColorRef;
+#include "color.h"
 
 typedef struct {
     char ppmType;

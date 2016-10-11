@@ -167,6 +167,25 @@ Color raycast_angular_attenuation(Color lightColor, double aConstant, Vector lig
     return out;
 }
 
+Color raycast_radial_attenuation(Color lightColor, double a0Constant, double a1Constant, double a2Constant, double distance) {
+
+    if (distance == INFINITY) {
+        return lightColor;
+    }
+
+    double disc = a2Constant*distance*distance + a1Constant*distance + a0Constant;
+
+    if (disc == 0)
+        return (Color) {.r=0,.g=0,.b=0};
+
+    double f = 1.0/disc;
+    return (Color) {
+            .r = lightColor.r * f,
+            .g = lightColor.g * f,
+            .b = lightColor.b * f
+    };
+}
+
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
 
     Vector hitPos, hitPos2;
@@ -174,7 +193,8 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     Vector lightRay, lightDirection;
     SceneObjectRef hitObject, hitObject2;
     Color color = (Color) {.r=0,.g=0,.b=0};
-    Color tempColor, lightColor;
+    Color lightColor;
+    double lightDistance;
     int i;
 
     // Check for initial hit
@@ -190,9 +210,10 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
 
             lightRay = vec_sub(scene->objects[i].pos, hitPos);
             lightDirection = vec_unit(lightRay);
+            lightDistance = vec_mag(lightRay);
 
             // Ignore if a shadow
-            if (!raycast_intersect((Ray){.pos=hitPos,.dir=lightDirection}, scene, vec_mag(lightRay), &hitPos2, &hitNormal2, &hitObject2)) {
+            if (!raycast_intersect((Ray){.pos=hitPos,.dir=lightDirection}, scene, lightDistance, &hitPos2, &hitNormal2, &hitObject2)) {
                 return 0;
             }
             if (hitPos2.x != INFINITY && hitPos2.y != INFINITY && hitPos2.z != INFINITY) {
@@ -206,11 +227,16 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                     vec_scale(lightDirection, -1)
             );
 
+            lightColor = color_blend(lightColor, raycast_radial_attenuation(
+                    scene->objects[i].color,
+                    scene->objects[i].data.light.radialA0,
+                    scene->objects[i].data.light.radialA1,
+                    scene->objects[i].data.light.radialA2,
+                    lightDistance
+            ), BLEND_MULTIPLY);
+
             // Calculate diffuse
-            tempColor = raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection);
-            color.r += tempColor.r;
-            color.g += tempColor.g;
-            color.b += tempColor.b;
+            color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
         }
     }
 
