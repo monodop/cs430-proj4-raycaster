@@ -60,15 +60,6 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             .value.col = &(object->color),
             .kfs.col = &(object->colorKfs)
     };
-    metadata[i++] = (SceneObjectMetadata) {
-            .type = SEMT_VECTOR,
-            .jsonKeyName = "angle",
-            .required = false,
-            .canAnimate = true,
-            .value.vec = &(object->angle),
-            .kfs.vec = &(object->angleKfs),
-            .defaultValue.vec = (Vector) {.x=0,.y=0,.z=0}
-    };
 
     switch (object->type) {
         case SCENE_OBJECT_CAMERA:
@@ -76,6 +67,15 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             metadata[0].defaultValue.vec = (Vector){.x=0,.y=0,.z=0};
             metadata[1].required = false;
             metadata[1].defaultValue.col = (Color){.r=0,.g=0,.b=0};
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_VECTOR,
+                    .jsonKeyName = "angle",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.vec = &(object->angle),
+                    .kfs.vec = &(object->angleKfs),
+                    .defaultValue.vec = (Vector) {.x=0,.y=0,.z=0}
+            };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
                     .jsonKeyName = "width",
@@ -145,6 +145,54 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .kfs.d = &(object->data.sphere.radiusKfs)
             };
             break;
+        case SCENE_OBJECT_LIGHT:
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_VECTOR,
+                    .jsonKeyName = "direction",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.vec = &(object->data.light.direction),
+                    .kfs.vec = &(object->data.light.directionKfs),
+                    .defaultValue.vec = (Vector) {.x=0,.y=0,.z=0}
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "radial-a0",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->data.light.radialA0),
+                    .kfs.d = &(object->data.light.radialA0Kfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "radial-a1",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->data.light.radialA1),
+                    .kfs.d = &(object->data.light.radialA1Kfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "radial-a2",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->data.light.radialA2),
+                    .kfs.d = &(object->data.light.radialA2Kfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "angular-a0",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->data.light.angularA0),
+                    .kfs.d = &(object->data.light.angularA0Kfs),
+                    .defaultValue.d = 0
+            };
+            break;
+
     }
     return i;
 }
@@ -156,6 +204,8 @@ int scene_char_to_object_type(char* typeStr, SceneObjectType* typeOut) {
         (*typeOut) = SCENE_OBJECT_SPHERE;
     } else if (strcmp(typeStr, "plane") == 0) {
         (*typeOut) = SCENE_OBJECT_PLANE;
+    } else if (strcmp(typeStr, "light") == 0) {
+        (*typeOut) = SCENE_OBJECT_LIGHT;
     } else {
         fprintf(stderr, "Error: Invalid scene json. Unknown object of type '%s' detected.\n", typeStr);
         return 0;

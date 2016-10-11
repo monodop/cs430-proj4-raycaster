@@ -34,10 +34,26 @@ typedef struct {
 } ScenePlane;
 typedef ScenePlane* ScenePlaneRef;
 
+typedef struct {
+    Vector direction;
+    double radialA0;
+    double radialA1;
+    double radialA2;
+    double angularA0;
+
+    Vector* directionKfs;
+    double* radialA0Kfs;
+    double* radialA1Kfs;
+    double* radialA2Kfs;
+    double* angularA0Kfs;
+} SceneLight;
+typedef SceneLight* SceneLightRef;
+
 typedef enum {
     SCENE_OBJECT_CAMERA,
     SCENE_OBJECT_SPHERE,
-    SCENE_OBJECT_PLANE
+    SCENE_OBJECT_PLANE,
+    SCENE_OBJECT_LIGHT
 } SceneObjectType;
 
 typedef struct {
@@ -51,6 +67,7 @@ typedef struct {
         SceneCamera camera;
         SceneSphere sphere;
         ScenePlane plane;
+        SceneLight light;
     } data;
     Vector* posKfs;
     Vector* angleKfs;
