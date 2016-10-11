@@ -117,4 +117,9 @@ static inline Vector vec_rot(Vector point, Vector angle) {
     
 }
 
+static inline Vector vec_reflect(Vector vec, Vector axis) {
+    double scale = 2 * vec_dot(axis, vec);
+    return vec_unit(vec_sub(vec, vec_scale(axis, scale)));
+}
+
 #endif //CS430_PROJ2_RAYCASTER_VEC_H

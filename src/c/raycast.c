@@ -139,16 +139,24 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
 }
 
 Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection) {
-    Color out = (Color) {.r=0,.g=0,.b=0};
     double dotted = vec_dot(surfaceNormal, lightDirection);
 
-    if (dotted > 0) {
-        out.r = dotted * lightColor.r * surfaceColor.r;
-        out.g = dotted * lightColor.g * surfaceColor.g;
-        out.b = dotted * lightColor.b * surfaceColor.b;
-    }
+    if (dotted <= 0)
+        return (Color) {.r=0,.g=0,.b=0};
 
-    return out;
+    return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), dotted);
+}
+
+Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection, Vector reflectionDirection, Vector viewDirection) {
+    double dotnl = vec_dot(surfaceNormal, lightDirection);
+    double dotvr = vec_dot(viewDirection, reflectionDirection);
+    double ns = 10; // material reflectivity
+
+    if (dotnl <= 0 || dotvr <= 0)
+        return (Color) {.r=0,.g=0,.b=0};
+
+    double f = pow(dotvr, ns);
+    return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), f);
 }
 
 Color raycast_angular_attenuation(Color lightColor, double aConstant, Vector lightDirection, Vector testDirection) {
@@ -190,7 +198,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
 
     Vector hitPos, hitPos2;
     Vector hitNormal, hitNormal2;
-    Vector lightRay, lightDirection;
+    Vector lightRay, lightDirection, reflectionDirection, viewDirection;
     SceneObjectRef hitObject, hitObject2;
     Color color = (Color) {.r=0,.g=0,.b=0};
     Color lightColor;
@@ -211,6 +219,8 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
             lightRay = vec_sub(scene->objects[i].pos, hitPos);
             lightDirection = vec_unit(lightRay);
             lightDistance = vec_mag(lightRay);
+            viewDirection = vec_scale(ray.dir, -1);
+            reflectionDirection = vec_reflect(vec_scale(lightDirection, -1), hitNormal);
 
             // Ignore if a shadow
             if (!raycast_intersect((Ray){.pos=hitPos,.dir=lightDirection}, scene, lightDistance, &hitPos2, &hitNormal2, &hitObject2)) {
@@ -235,8 +245,9 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                     lightDistance
             ), BLEND_MULTIPLY);
 
-            // Calculate diffuse
+            // Calculate diffuse & specular
             color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
+            color = color_blend(color, raycast_calculate_specular(hitObject->color, lightColor, hitNormal, lightDirection, reflectionDirection, viewDirection), BLEND_ADD);
         }
     }
 

@@ -17,5 +17,6 @@ typedef enum {
 } BLEND_MODE;
 
 Color color_blend(Color a, Color b, BLEND_MODE blendMode);
+Color color_scale(Color a, double scale);
 
 #endif //CS430_PROJ3_RAYCASTER_COLOR_H

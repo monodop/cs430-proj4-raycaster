@@ -29,3 +29,10 @@ Color color_blend(Color a, Color b, BLEND_MODE blendMode) {
     }
 }
 
+Color color_scale(Color a, double scale) {
+    return (Color) {
+            .r = a.r * scale,
+            .g = a.g * scale,
+            .b = a.b * scale
+    };
+}
