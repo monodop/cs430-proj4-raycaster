@@ -16,9 +16,11 @@ typedef struct {
     double startTime;
     double endTime;
     double frameRate;
+    Color ambientColor;
 
     double* widthKfs;
     double* heightKfs;
+    Color* ambientColorKfs;
 } SceneCamera;
 typedef SceneCamera* SceneCameraRef;
 
@@ -75,6 +77,7 @@ typedef struct {
     Vector* angleKfs;
     Color* colorKfs;
     Color* specColorKfs;
+    double* reflectivitityKfs;
 } SceneObject;
 typedef SceneObject* SceneObjectRef;
 

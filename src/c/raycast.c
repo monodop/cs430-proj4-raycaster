@@ -420,7 +420,7 @@ int raycast_image(Worker* workers, PpmImageRef image, SceneRef scene, int thread
             }
         }
         printf("%d%% rays casted\n", (int)((progress * 100)/total_workload));
-        sleep(1);
+        usleep(100 * 1000);
     }
 
     printf("100%% rays casted\n");
