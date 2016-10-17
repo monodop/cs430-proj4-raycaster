@@ -158,39 +158,29 @@ Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector su
     return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), f);
 }
 
-Color raycast_angular_attenuation(Color lightColor, double aConstant, Vector lightDirection, Vector testDirection) {
-    Color out = (Color) {.r=1,.g=1,.b=1};
+double raycast_angular_attenuation(double aConstant, Vector lightDirection, Vector testDirection) {
     double dotted = vec_dot(lightDirection, testDirection);
 
     if (aConstant == 0)
-        return out;
+        return 1;
     if (dotted <= 0)
-        return (Color) {.r=0,.g=0,.b=0};
+        return 0;
 
-    double f = pow(dotted, aConstant);
-    out.r = f * lightColor.r;
-    out.g = f * lightColor.g;
-    out.b = f * lightColor.b;
-    return out;
+    return pow(dotted, aConstant);
 }
 
-Color raycast_radial_attenuation(Color lightColor, double a0Constant, double a1Constant, double a2Constant, double distance) {
+double raycast_radial_attenuation(double a0Constant, double a1Constant, double a2Constant, double distance) {
 
     if (distance == INFINITY) {
-        return lightColor;
+        return 1;
     }
 
     double disc = a2Constant*distance*distance + a1Constant*distance + a0Constant;
 
     if (disc == 0)
-        return (Color) {.r=0,.g=0,.b=0};
+        return 0;
 
-    double f = 1.0/disc;
-    return (Color) {
-            .r = lightColor.r * f,
-            .g = lightColor.g * f,
-            .b = lightColor.b * f
-    };
+    return 1.0/disc;
 }
 
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
@@ -202,6 +192,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     Color color = (Color) {.r=0,.g=0,.b=0};
     Color lightColor;
     double lightDistance;
+    double attenuationFactor;
     int i;
 
     // Check for initial hit
@@ -229,20 +220,20 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                 continue;
             }
 
-            lightColor = raycast_angular_attenuation(
-                    scene->objects[i].color,
+            attenuationFactor = raycast_angular_attenuation(
                     scene->objects[i].data.light.angularA0,
                     vec_unit(scene->objects[i].data.light.direction),
                     vec_scale(lightDirection, -1)
             );
 
-            lightColor = color_blend(lightColor, raycast_radial_attenuation(
-                    scene->objects[i].color,
+            attenuationFactor *= raycast_radial_attenuation(
                     scene->objects[i].data.light.radialA0,
                     scene->objects[i].data.light.radialA1,
                     scene->objects[i].data.light.radialA2,
                     lightDistance
-            ), BLEND_MULTIPLY);
+            );
+
+            lightColor = color_scale(scene->objects[i].color, attenuationFactor);
 
             // Calculate diffuse & specular
             color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
