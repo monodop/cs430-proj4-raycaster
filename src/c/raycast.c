@@ -147,15 +147,14 @@ Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector sur
     return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), dotted);
 }
 
-Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection, Vector reflectionDirection, Vector viewDirection) {
+Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection, Vector reflectionDirection, Vector viewDirection, double reflectivity) {
     double dotnl = vec_dot(surfaceNormal, lightDirection);
     double dotvr = vec_dot(viewDirection, reflectionDirection);
-    double ns = 10; // material reflectivity
 
     if (dotnl <= 0 || dotvr <= 0)
         return (Color) {.r=0,.g=0,.b=0};
 
-    double f = pow(dotvr, ns);
+    double f = pow(dotvr, reflectivity);
     return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), f);
 }
 
@@ -247,7 +246,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
 
             // Calculate diffuse & specular
             color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
-            color = color_blend(color, raycast_calculate_specular(hitObject->color, lightColor, hitNormal, lightDirection, reflectionDirection, viewDirection), BLEND_ADD);
+            color = color_blend(color, raycast_calculate_specular(hitObject->specColor, lightColor, hitNormal, lightDirection, reflectionDirection, viewDirection, hitObject->reflectivity), BLEND_ADD);
         }
     }
 

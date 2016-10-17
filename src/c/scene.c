@@ -52,21 +52,11 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             .value.vec = &(object->pos),
             .kfs.vec = &(object->posKfs)
     };
-    metadata[i++] = (SceneObjectMetadata) {
-            .type = SEMT_COLOR,
-            .jsonKeyName = "color",
-            .required = true,
-            .canAnimate = true,
-            .value.col = &(object->color),
-            .kfs.col = &(object->colorKfs)
-    };
 
     switch (object->type) {
         case SCENE_OBJECT_CAMERA:
             metadata[0].required = false;
             metadata[0].defaultValue.vec = (Vector){.x=0,.y=0,.z=0};
-            metadata[1].required = false;
-            metadata[1].defaultValue.col = (Color){.r=0,.g=0,.b=0};
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
                     .jsonKeyName = "angle",
@@ -127,6 +117,32 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             break;
         case SCENE_OBJECT_PLANE:
             metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "diffuse_color",
+                    .required = true,
+                    .canAnimate = true,
+                    .value.col = &(object->color),
+                    .kfs.col = &(object->colorKfs)
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "specular_color",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.col = &(object->specColor),
+                    .kfs.col = &(object->specColorKfs),
+                    .defaultValue.col = (Color){.r=1.0,.g=1.0,.b=1.0}
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "reflectivity",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->reflectivity),
+                    .kfs.d = &(object->reflectivitityKfs),
+                    .defaultValue.d = 1
+            };
+            metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
                     .jsonKeyName = "normal",
                     .required = true,
@@ -146,6 +162,14 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             };
             break;
         case SCENE_OBJECT_LIGHT:
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "color",
+                    .required = true,
+                    .canAnimate = true,
+                    .value.col = &(object->color),
+                    .kfs.col = &(object->colorKfs)
+            };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
                     .jsonKeyName = "direction",
@@ -531,6 +555,8 @@ int scene_build(JsonElementRef jsonRoot, SceneRef sceneOut) {
             printf("Object %d/%d of type Sphere loaded.\n", i+1, jsonRoot->count);
         } else if (strcmp(type, "plane") == 0) {
             printf("Object %d/%d of type Plane loaded.\n", i + 1, jsonRoot->count);
+        } else if (strcmp(type, "light") == 0) {
+            printf("Object %d/%d of type Light loaded.\n", i + 1, jsonRoot->count);
         }
 
     }

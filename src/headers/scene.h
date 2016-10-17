@@ -61,6 +61,8 @@ typedef struct {
     Vector pos;
     Vector angle;
     Color color;
+    Color specColor;
+    double reflectivity;
     double* tValues;
     int tCount;
     union {
@@ -72,6 +74,7 @@ typedef struct {
     Vector* posKfs;
     Vector* angleKfs;
     Color* colorKfs;
+    Color* specColorKfs;
 } SceneObject;
 typedef SceneObject* SceneObjectRef;
 
