@@ -119,7 +119,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
                 if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
                     bestDistance = distance;
                     bestHit = hit;
-                    bestNormal = scene->objects[i].data.plane.normal;
+                    bestNormal = vec_unit(scene->objects[i].data.plane.normal);
                     bestHitObject = &(scene->objects[i]);
                 }
             default:
