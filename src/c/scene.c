@@ -114,6 +114,15 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .value.d = &(object->data.camera.frameRate),
                     .defaultValue.d = 1
             };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "ambientColor",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.col = &(object->data.camera.ambientColor),
+                    .kfs.col = &(object->data.camera.ambientColorKfs),
+                    .defaultValue.col = (Color) {.r=0.02,.g=0.02,.b=0.05}
+            };
             break;
         case SCENE_OBJECT_PLANE:
             metadata[i++] = (SceneObjectMetadata) {
@@ -152,6 +161,32 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             };
             break;
         case SCENE_OBJECT_SPHERE:
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "diffuse_color",
+                    .required = true,
+                    .canAnimate = true,
+                    .value.col = &(object->color),
+                    .kfs.col = &(object->colorKfs)
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_COLOR,
+                    .jsonKeyName = "specular_color",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.col = &(object->specColor),
+                    .kfs.col = &(object->specColorKfs),
+                    .defaultValue.col = (Color){.r=1.0,.g=1.0,.b=1.0}
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "reflectivity",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->reflectivity),
+                    .kfs.d = &(object->reflectivitityKfs),
+                    .defaultValue.d = 4
+            };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
                     .jsonKeyName = "radius",

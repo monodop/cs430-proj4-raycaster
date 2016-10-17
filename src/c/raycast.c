@@ -189,7 +189,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     Vector hitNormal, hitNormal2;
     Vector lightRay, lightDirection, reflectionDirection, viewDirection;
     SceneObjectRef hitObject, hitObject2;
-    Color color = (Color) {.r=0,.g=0,.b=0};
+    Color color = scene->camera->data.camera.ambientColor;
     Color lightColor;
     double lightDistance;
     double attenuationFactor;
@@ -313,6 +313,8 @@ void* raycast_worker(void* arg) {
             // Create ray
             ray.pos = scene->camera->pos;
             ray.dir = vec_unit(point);
+
+            pixColor = (Color) {.r=0,.g=0,.b=0};
 
             // Shoot ray
             if (!raycast_shoot(ray, scene, 100.0, &pixColor)) {
