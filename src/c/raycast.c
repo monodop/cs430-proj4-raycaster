@@ -158,12 +158,16 @@ Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector su
     return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), f);
 }
 
-double raycast_angular_attenuation(double aConstant, Vector lightDirection, Vector testDirection) {
-    double dotted = vec_dot(lightDirection, testDirection);
+double raycast_angular_attenuation(double aConstant, double theta, Vector lightDirection, Vector testDirection) {
+    double dotted;
 
     if (aConstant == 0)
         return 1;
-    if (dotted <= 0)
+    if (theta == 0 || (lightDirection.x == 0 && lightDirection.y == 0 && lightDirection.z == 0))
+        return 0;
+
+    dotted = vec_dot(lightDirection, testDirection);
+    if (dotted <= 0 || cos(deg2rad(theta)) > dotted)
         return 0;
 
     return pow(dotted, aConstant);
@@ -222,6 +226,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
 
             attenuationFactor = raycast_angular_attenuation(
                     scene->objects[i].data.light.angularA0,
+                    scene->objects[i].data.light.theta,
                     vec_unit(scene->objects[i].data.light.direction),
                     vec_scale(lightDirection, -1)
             );

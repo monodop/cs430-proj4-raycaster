@@ -149,7 +149,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 8
+                    .defaultValue.d = 20
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
@@ -185,7 +185,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 8
+                    .defaultValue.d = 20
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
@@ -248,6 +248,15 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->data.light.angularA0),
                     .kfs.d = &(object->data.light.angularA0Kfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "theta",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->data.light.theta),
+                    .kfs.d = &(object->data.light.thetaKfs),
                     .defaultValue.d = 0
             };
             break;

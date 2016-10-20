@@ -42,12 +42,14 @@ typedef struct {
     double radialA1;
     double radialA2;
     double angularA0;
+    double theta;
 
     Vector* directionKfs;
     double* radialA0Kfs;
     double* radialA1Kfs;
     double* radialA2Kfs;
     double* angularA0Kfs;
+    double* thetaKfs;
 } SceneLight;
 typedef SceneLight* SceneLightRef;
 
