@@ -149,7 +149,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 1
+                    .defaultValue.d = 8
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
@@ -185,7 +185,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 4
+                    .defaultValue.d = 8
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
