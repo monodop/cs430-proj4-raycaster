@@ -116,12 +116,12 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_COLOR,
-                    .jsonKeyName = "ambientColor",
+                    .jsonKeyName = "ambient_color",
                     .required = false,
                     .canAnimate = true,
                     .value.col = &(object->data.camera.ambientColor),
                     .kfs.col = &(object->data.camera.ambientColorKfs),
-                    .defaultValue.col = (Color) {.r=0.02,.g=0.02,.b=0.05}
+                    .defaultValue.col = (Color) {.r=0.02,.g=0.02,.b=0.02}
             };
             break;
         case SCENE_OBJECT_PLANE:
