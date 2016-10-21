@@ -1,6 +1,6 @@
-# cs430-proj2-raycaster
+# cs430-proj3-illumination
 
-Performs basic raycasting on a scene and renders the output to a PPM file.
+Performs basic raycasting on a scene and renders the output to a PPM file. Expands on proj2 and implements basic lighting
 
 ![](/samples/4k%20spheres.png)
 
@@ -60,7 +60,7 @@ raycast pixel_width pixel_height scene_json output_ppm
 The scene is the basis of this rendering engine. A scene is composed of a camera, and many objects. Currently, only planes and spheres can be rendered.
 
 ### Scene Json
-A scene is represented by a json file. The root element of the file should be an array, and each element in the array is an object in the scene. The order of the elements does not matter, but you must include exactly one camera or you will get an error message.
+A scene is represented by a json file. The root element of the file should be an array, and each element in the array is an object in the scene. The order of the elements does not matter, but you must include exactly one camera or you will get an error message. It is also a good idea to provide lighting, or you may not see anything in the scene.
 
 #### Example
 ```
@@ -72,15 +72,23 @@ A scene is represented by a json file. The root element of the file should be an
   },
   {
     "type": "sphere",
-    "color": [0.5, 0, 0],
+    "diffuse_color": [0.5, 0, 0],
     "position": [1.2, 1.5, 9.4],
     "radius": 0.3
   },
   {
     "type": "plane",
-    "color": [0.2, 0.6, 1.0],
+    "diffuse_color": [0.2, 0.6, 1.0],
     "position": [0, 1, 10],
     "normal": [0, 1, 1]
+  },
+  {
+    "type": "light",
+    "color": [10.0, 10.0, 10.0],
+    "position": [0, 4, 7],
+    "radial-a2": 0.05,
+    "radial-a1": 0.5,
+    "radial-a0": 1
   }
 ]
 ```
@@ -106,7 +114,9 @@ Property | Type | Required | Default | Can Animate | Description | Example
 --- | --- | --- | --- | --- | --- | ---
 position | Vector3 | Yes | N/A | Yes | A point on the plane. | "position": [1.5,0,-2.0]
 normal | Vector3 | Yes | N/A | Yes | A vector that is perpendicular to the plane. This does not have to be a unit vector | "normal": [0,1,0]
-color | Vector3 | Yes | N/A | Yes | The color of the plane (color components are between 0.0 amd 1.0). | "color": [1.0,0.0,0.0]
+diffuse_color | Vector3 | Yes | N/A | Yes | The surface color of the plane (color components are between 0.0 amd 1.0). | "diffuse_color": [1.0,0.0,0.0]
+specular_color | Vector3 | No | [1,1,1] | Yes | The reflective color of the plane (color components are between 0.0 amd 1.0). | "specular_color": [1.0,0.0,0.0],
+"reflectivity" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "reflectivity: 10
 
 ### Sphere
 A sphere is an object that is perfectly round, and any point along the outside of a sphere is the exact same distance as any other point from the center of the sphere. The following is a table of properties that the sphere object supports
@@ -115,7 +125,23 @@ Property | Type | Required | Default | Can Animate | Description | Example
 --- | --- | --- | --- | --- | --- | ---
 position | Vector3 | Yes | N/A | Yes | The center of the sphere. | "position": [1.5,0,-2.0]
 radius | Number | Yes | N/A | Yes | The radius of the sphere. | "radius": 0.5
-color | Vector3 | Yes | N/A | Yes | The color of the sphere (color components are between 0.0 amd 1.0). | "color": [1.0,0.0,0.0]
+diffuse_color | Vector3 | Yes | N/A | Yes | The surface color of the sphere (color components are between 0.0 amd 1.0). | "diffuse_color": [1.0,0.0,0.0]
+specular_color | Vector3 | No | [1,1,1] | Yes | The reflective color of the sphere (color components are between 0.0 amd 1.0). | "specular_color": [1.0,0.0,0.0],
+"reflectivity" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "reflectivity: 10
+
+### Light
+There are two types of lights, but they are defined by the same type of object: point lights and spot lights. Point lights emit light in every direction equally, while spot lights point light in a specific direction. Lights are required to light up the scene
+
+Property | Type | Required | Default | Can Animate | Description | Example
+--- | --- | --- | --- | --- | --- | ---
+position | Vector3 | Yes | N/A | Yes | The center of the light. | "position": [1.5,0,-2.0]
+color | Vector3 | Yes | N/A | Yes | The color of the light (color components are between 0.0 and infinity). | "color": [10.0,9.0,2.0]
+radial-a0 | Number | No | 0 | Yes | The lowest order term in the radial attenuation function. Higher numbers reduce the light by a constant factor more | "radial-a0": 1
+radial-a1 | Number | No | 0 | Yes | The middle order term in the radial attenuation function. Higher numbers reduce the light more in a linear fashion as distance from the light increases | "radial-a1": 0.5
+radial-a2 | Number | No | 1 | Yes | The highest order term in the radial attenuation function. Higher numbers reduce the light more in a quadratic fashion as distance from the light increases | "radial-a2": 0.025
+theta | Number | No | 0 | Yes | If not zero (and a direction is provided), forms the light into a spot light. Theta is the angle in degrees from the direction that light can shine (so 2xtheta is the complete angle of the cone). | "theta": 20
+direction | Vector3 | No | [0,0,0] | Yes | The direction a spot light is facing. If this and theta are provided,  the light acts as a spotlight. | "direction": [1,0,0]
+angular-a0 | Number | No | 0 | Yes | The attenuation factor in the angular attenuation function. | "angular-a0": 1
 
 ### Animation
 Animation in this raycaster is pretty simple. Simply set the startTime, endTime, animated, and frameRate to the desired values, and this raycaster will automatically create a series of ppm files representing each frame in your animation. The frames will use the same filename that you passed into the program, followed by a -, the frame number, and then the file extension. The frame number is padded with zeroes such that all filenames are the same length. For example, if there are 2000 frames to render and you provided ```frame.ppm``` as the input filename, then the first frame will be ```frame-0001.ppm```, then ```frame-0002.ppm```, etc.
