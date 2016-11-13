@@ -14,9 +14,9 @@ SRCFILES=$(wildcard $(CDIR)/*.c)
 _OBJ=$(SRCFILES:c=o)
 OBJ=$(patsubst $(CDIR)/%,$(OBJDIR)/%,$(_OBJ))
 
-build: clean $(OBJDIR) $(BINDIR) raycast
+build: clean $(OBJDIR) $(BINDIR) raytrace
 
-raycast: $(OBJ)
+raytrace: $(OBJ)
 	gcc -o $(BINDIR)/$@ $^ $(CFLAGS)
 
 $(OBJDIR)/%.o: $(CDIR)/%.c $(DEPS)
