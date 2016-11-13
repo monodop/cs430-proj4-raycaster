@@ -144,12 +144,39 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
+                    .jsonKeyName = "ns",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->ns),
+                    .kfs.d = &(object->nsKfs),
+                    .defaultValue.d = 20
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
                     .jsonKeyName = "reflectivity",
                     .required = false,
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 20
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "refractivity",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->refractivity),
+                    .kfs.d = &(object->refractivityKfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "ior",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->ior),
+                    .kfs.d = &(object->iorKfs),
+                    .defaultValue.d = 0
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
@@ -180,12 +207,39 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
+                    .jsonKeyName = "ns",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->ns),
+                    .kfs.d = &(object->nsKfs),
+                    .defaultValue.d = 20
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
                     .jsonKeyName = "reflectivity",
                     .required = false,
                     .canAnimate = true,
                     .value.d = &(object->reflectivity),
                     .kfs.d = &(object->reflectivitityKfs),
-                    .defaultValue.d = 20
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "refractivity",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->refractivity),
+                    .kfs.d = &(object->refractivityKfs),
+                    .defaultValue.d = 0
+            };
+            metadata[i++] = (SceneObjectMetadata) {
+                    .type = SEMT_DOUBLE,
+                    .jsonKeyName = "ior",
+                    .required = false,
+                    .canAnimate = true,
+                    .value.d = &(object->ior),
+                    .kfs.d = &(object->iorKfs),
+                    .defaultValue.d = 0
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,
