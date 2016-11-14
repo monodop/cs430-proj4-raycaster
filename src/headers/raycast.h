@@ -8,6 +8,8 @@
 #include "scene.h"
 #include "image.h"
 
+#define MAX_BOUNCES 10
+
 typedef enum {
     WORKER_ACKNOWLEDGED, // Worker acknowledged command
     WORKER_COMPLETED,    // Worked completed command
@@ -70,6 +72,6 @@ int raycast_image(Worker* workers, PpmImageRef image, SceneRef scene, int thread
  * @param colorOut - The color the ray hit, including lumination
  * @return 1 if success, 0 if failure
  */
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut);
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces);
 
 #endif //CS430_PROJ2_RAYCASTER_RAYCASTER_H

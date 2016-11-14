@@ -5,6 +5,7 @@
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
 #include "../headers/scene.h"
+#include "../headers/vec.h"
 
 #include <pthread.h>
 #include <unistd.h>
@@ -187,16 +188,21 @@ double raycast_radial_attenuation(double a0Constant, double a1Constant, double a
     return 1.0/disc;
 }
 
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut) {
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces) {
 
     Vector hitPos, hitPos2;
     Vector hitNormal, hitNormal2;
     Vector lightRay, lightDirection, reflectionDirection, viewDirection;
+    Ray recRay;
     SceneObjectRef hitObject, hitObject2;
     Color color = scene->camera->data.camera.ambientColor;
+    Color reflectionColor = (Color) {.r=0, .g=0, .b=0};
+    Color refractionColor = (Color) {.r=0, .g=0, .b=0};
     Color lightColor;
     double lightDistance;
     double attenuationFactor;
+    double reflectivity;
+    double refractivity;
     int i;
 
     // Check for initial hit
@@ -244,6 +250,31 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
             color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
             color = color_blend(color, raycast_calculate_specular(hitObject->specColor, lightColor, hitNormal, lightDirection, reflectionDirection, viewDirection, hitObject->ns), BLEND_ADD);
         }
+    }
+
+    if (maxBounces > 0) {
+        // Calculate Reflection and Refraction
+        reflectivity = hitObject->reflectivity;
+        refractivity = hitObject->refractivity;
+
+        if (reflectivity > 0) {
+            recRay.pos = hitPos;
+            recRay.dir = vec_reflect(ray.dir, hitNormal);
+            if (!raycast_shoot(recRay, scene, INFINITY, &reflectionColor, maxBounces-1)) {
+                return 0;
+            }
+        }
+
+        if (refractivity > 0) {
+            // TODO
+        }
+
+        // Compute final color
+        reflectionColor = color_scale(reflectionColor, reflectivity);
+        refractionColor = color_scale(refractionColor, refractivity);
+        color = color_scale(color, (1 - reflectivity - refractivity));
+        color = color_blend(color, reflectionColor, BLEND_ADD);
+        color = color_blend(color, refractionColor, BLEND_ADD);
     }
 
     // Save output color
@@ -322,7 +353,7 @@ void* raycast_worker(void* arg) {
             pixColor = (Color) {.r=0,.g=0,.b=0};
 
             // Shoot ray
-            if (!raycast_shoot(ray, scene, 100.0, &pixColor)) {
+            if (!raycast_shoot(ray, scene, 100.0, &pixColor, MAX_BOUNCES)) {
                 fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
                 return 0;
             }
