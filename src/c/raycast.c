@@ -18,7 +18,7 @@
  * @param hitOut - The place to store the hit location
  * @param distanceOut - The place to store the hit distance
  */
-void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, VectorRef hitOut, double* distanceOut) {
+void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, VectorRef hitOut, double* distanceOut, bool* isInside) {
     double b, c, t, disc;
     Vector diff = vec_sub(ray.pos, sphere_center);
 
@@ -36,9 +36,12 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     disc = sqrt(disc);
 
     // Calcualte t-value
+    (*isInside) = false;
     t = (-b - disc) / 2.0;
-    if (t < 0.0)
+    if (t < 0.0) {
         t = (-b + disc) / 2.0;
+        (*isInside) = true;
+    }
 
     // No intersection if t value is negative (sphere is behind ray)
     if (t < 0.0) {
@@ -91,13 +94,15 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
     return;
 }
 
-int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosition, VectorRef hitNormal, SceneObjectRef* hitObject) {
+int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hitPosition, VectorRef hitNormal, SceneObjectRef* hitObject, bool* isInside) {
 
     Vector bestHit = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
     Vector bestNormal = (Vector) { .x = 0, .y = 0, .z = 0 };
     Vector hit;
     double bestDistance = INFINITY;
     double distance;
+    bool bestIsInside = false;
+    bool isInside2 = false;
     SceneObjectRef bestHitObject = NULL;
 
     // Iterate over the scene
@@ -105,11 +110,15 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
         switch (scene->objects[i].type) {
             case SCENE_OBJECT_SPHERE:
                 // Test sphere intersection
-                sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance);
+                isInside2 = false;
+                sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance, &isInside2);
                 if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
                     bestDistance = distance;
                     bestHit = hit;
                     bestNormal = vec_unit(vec_sub(hit, scene->objects[i].pos));
+                    if (isInside2)
+                        bestNormal = vec_scale(bestNormal, -1);
+                    bestIsInside = isInside2;
                     bestHitObject = &(scene->objects[i]);
                 }
                 break;
@@ -119,6 +128,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
                 if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
                     bestDistance = distance;
                     bestHit = hit;
+                    bestIsInside = false;
                     bestNormal = vec_unit(scene->objects[i].data.plane.normal);
                     bestHitObject = &(scene->objects[i]);
                 }
@@ -131,6 +141,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
     // Pass back the best hit
     (*hitPosition) = bestHit;
     (*hitNormal) = bestNormal;
+    (*isInside) = bestIsInside;
     if (bestDistance != INFINITY) {
         (*hitObject) = bestHitObject;
     }
@@ -187,6 +198,16 @@ double raycast_radial_attenuation(double a0Constant, double a1Constant, double a
     return 1.0/disc;
 }
 
+Vector raycast_refract_vector(Vector incoming, Vector normal, double iorSrc, double iorDest) {
+    Vector a = vec_unit(vec_cross(normal, incoming));
+    Vector b = vec_cross(a, normal);
+
+    double sinTheta = (iorSrc / iorDest) * (vec_dot(incoming, b));
+    double cosTheta = sqrt( 1 - (sinTheta * sinTheta));
+
+    return vec_sub(vec_scale(b, sinTheta), vec_scale(normal, cosTheta));
+}
+
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces, DblListRef iorList) {
 
     Vector hitPos, hitPos2;
@@ -202,52 +223,60 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     double attenuationFactor;
     double reflectivity;
     double refractivity;
+    bool isExiting, isExiting2;
     int i;
 
     // Check for initial hit
-    if (!raycast_intersect(ray, scene, maxDistance, &hitPos, &hitNormal, &hitObject)) {
+    if (!raycast_intersect(ray, scene, maxDistance, &hitPos, &hitNormal, &hitObject, &isExiting)) {
         return 0;
     }
     if (hitPos.x == INFINITY || hitPos.y == INFINITY || hitPos.z == INFINITY) {
         return 1;
     }
 
-    for (i = 0; i < scene->objectCount; i++) {
-        if (scene->objects[i].type == SCENE_OBJECT_LIGHT) {
+    if (!isExiting) {
+        for (i = 0; i < scene->objectCount; i++) {
+            if (scene->objects[i].type == SCENE_OBJECT_LIGHT) {
 
-            lightRay = vec_sub(scene->objects[i].pos, hitPos);
-            lightDirection = vec_unit(lightRay);
-            lightDistance = vec_mag(lightRay);
-            viewDirection = vec_scale(ray.dir, -1);
-            reflectionDirection = vec_reflect(vec_scale(lightDirection, -1), hitNormal);
+                lightRay = vec_sub(scene->objects[i].pos, hitPos);
+                lightDirection = vec_unit(lightRay);
+                lightDistance = vec_mag(lightRay);
+                viewDirection = vec_scale(ray.dir, -1);
+                reflectionDirection = vec_reflect(vec_scale(lightDirection, -1), hitNormal);
 
-            // Ignore if a shadow
-            if (!raycast_intersect((Ray){.pos=hitPos,.dir=lightDirection}, scene, lightDistance, &hitPos2, &hitNormal2, &hitObject2)) {
-                return 0;
+                // Ignore if a shadow
+                if (!raycast_intersect((Ray) {.pos=hitPos, .dir=lightDirection}, scene, lightDistance, &hitPos2,
+                                       &hitNormal2, &hitObject2, &isExiting2)) {
+                    return 0;
+                }
+                if (hitPos2.x != INFINITY && hitPos2.y != INFINITY && hitPos2.z != INFINITY) {
+                    continue;
+                }
+
+                attenuationFactor = raycast_angular_attenuation(
+                        scene->objects[i].data.light.angularA0,
+                        scene->objects[i].data.light.theta,
+                        vec_unit(scene->objects[i].data.light.direction),
+                        vec_scale(lightDirection, -1)
+                );
+
+                attenuationFactor *= raycast_radial_attenuation(
+                        scene->objects[i].data.light.radialA0,
+                        scene->objects[i].data.light.radialA1,
+                        scene->objects[i].data.light.radialA2,
+                        lightDistance
+                );
+
+                lightColor = color_scale(scene->objects[i].color, attenuationFactor);
+
+                // Calculate diffuse & specular
+                color = color_blend(color,
+                                    raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection),
+                                    BLEND_ADD);
+                color = color_blend(color, raycast_calculate_specular(hitObject->specColor, lightColor, hitNormal,
+                                                                      lightDirection, reflectionDirection,
+                                                                      viewDirection, hitObject->ns), BLEND_ADD);
             }
-            if (hitPos2.x != INFINITY && hitPos2.y != INFINITY && hitPos2.z != INFINITY) {
-                continue;
-            }
-
-            attenuationFactor = raycast_angular_attenuation(
-                    scene->objects[i].data.light.angularA0,
-                    scene->objects[i].data.light.theta,
-                    vec_unit(scene->objects[i].data.light.direction),
-                    vec_scale(lightDirection, -1)
-            );
-
-            attenuationFactor *= raycast_radial_attenuation(
-                    scene->objects[i].data.light.radialA0,
-                    scene->objects[i].data.light.radialA1,
-                    scene->objects[i].data.light.radialA2,
-                    lightDistance
-            );
-
-            lightColor = color_scale(scene->objects[i].color, attenuationFactor);
-
-            // Calculate diffuse & specular
-            color = color_blend(color, raycast_calculate_diffuse(hitObject->color, lightColor, hitNormal, lightDirection), BLEND_ADD);
-            color = color_blend(color, raycast_calculate_specular(hitObject->specColor, lightColor, hitNormal, lightDirection, reflectionDirection, viewDirection, hitObject->ns), BLEND_ADD);
         }
     }
 
@@ -256,7 +285,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
         reflectivity = hitObject->reflectivity;
         refractivity = hitObject->refractivity;
 
-        if (reflectivity > 0) {
+        if (reflectivity > 0 && !isExiting) {
             recRay.pos = hitPos;
             recRay.dir = vec_reflect(ray.dir, hitNormal);
             if (!raycast_shoot(recRay, scene, INFINITY, &reflectionColor, maxBounces-1, iorList)) {
@@ -264,16 +293,25 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
             }
         }
 
-        if (refractivity > 0) {
-            // TODO
+        if (refractivity > 0 || isExiting) {
+            recRay.pos = hitPos;
+            //recRay.dir = raycast_refract_vector(ray.dir, hitNormal, 1, 1);
+            recRay.dir = ray.dir;
+            if (!raycast_shoot(recRay, scene, INFINITY, &refractionColor, maxBounces-1, iorList)) {
+                return 0;
+            }
         }
 
         // Compute final color
-        reflectionColor = color_scale(reflectionColor, reflectivity);
-        refractionColor = color_scale(refractionColor, refractivity);
-        color = color_scale(color, (1 - reflectivity - refractivity));
-        color = color_blend(color, reflectionColor, BLEND_ADD);
-        color = color_blend(color, refractionColor, BLEND_ADD);
+        if (!isExiting) {
+            reflectionColor = color_scale(reflectionColor, reflectivity);
+            refractionColor = color_scale(refractionColor, refractivity);
+            color = color_scale(color, (1 - reflectivity - refractivity));
+            color = color_blend(color, reflectionColor, BLEND_ADD);
+            color = color_blend(color, refractionColor, BLEND_ADD);
+        } else {
+            color = refractionColor;
+        }
     }
 
     // Save output color
