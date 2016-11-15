@@ -3,23 +3,25 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src/headers/scene.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/list.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/helpers.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm6.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/interpolate.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/raycast.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/image.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/headers/vec.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/json.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/color.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm3.h" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/headers/ppm_header.h" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/headers/vec.h" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm_header.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/json.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/color.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/src/c/scene.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/main.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/scene.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/ppm3.c" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/c/list.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/helpers.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/ppm6.c" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/c/interpolate.c" isTestSource="false" />

@@ -4,8 +4,7 @@
 
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
-#include "../headers/scene.h"
-#include "../headers/vec.h"
+#include "../headers/list.h"
 
 #include <pthread.h>
 #include <unistd.h>
@@ -188,7 +187,7 @@ double raycast_radial_attenuation(double a0Constant, double a1Constant, double a
     return 1.0/disc;
 }
 
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces) {
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces, DblListRef iorList) {
 
     Vector hitPos, hitPos2;
     Vector hitNormal, hitNormal2;
@@ -260,7 +259,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
         if (reflectivity > 0) {
             recRay.pos = hitPos;
             recRay.dir = vec_reflect(ray.dir, hitNormal);
-            if (!raycast_shoot(recRay, scene, INFINITY, &reflectionColor, maxBounces-1)) {
+            if (!raycast_shoot(recRay, scene, INFINITY, &reflectionColor, maxBounces-1, iorList)) {
                 return 0;
             }
         }
@@ -304,6 +303,8 @@ void* raycast_worker(void* arg) {
 
     long i;
     int x, y;
+
+    DblList iorList;
 
     bool shouldKill = false;
 
@@ -352,11 +353,18 @@ void* raycast_worker(void* arg) {
 
             pixColor = (Color) {.r=0,.g=0,.b=0};
 
+            // Initialize IOR List
+            dbllist_init(&iorList, 1); // Default max size of 1 refractions
+            dbllist_push(&iorList, (DblListElem) {.value=1.0, .tag=NULL}); // IOR of air
+
             // Shoot ray
-            if (!raycast_shoot(ray, scene, 100.0, &pixColor, MAX_BOUNCES)) {
+            if (!raycast_shoot(ray, scene, 100.0, &pixColor, MAX_BOUNCES, &iorList)) {
                 fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
                 return 0;
             }
+
+            // Cleanup IOR List
+            dbllist_dispose(&iorList);
 
             pixColor.r = clamp(0, 1, pixColor.r);
             pixColor.g = clamp(0, 1, pixColor.g);

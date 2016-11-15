@@ -7,6 +7,7 @@
 
 #include "scene.h"
 #include "image.h"
+#include "list.h"
 
 #define MAX_BOUNCES 10
 
@@ -72,6 +73,6 @@ int raycast_image(Worker* workers, PpmImageRef image, SceneRef scene, int thread
  * @param colorOut - The color the ray hit, including lumination
  * @return 1 if success, 0 if failure
  */
-int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces);
+int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces, DblListRef iorList);
 
 #endif //CS430_PROJ2_RAYCASTER_RAYCASTER_H
