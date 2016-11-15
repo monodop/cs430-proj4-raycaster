@@ -5,6 +5,7 @@
 #include "../headers/raycast.h"
 #include "../headers/helpers.h"
 #include "../headers/list.h"
+#include "../headers/scene.h"
 
 #define EPSILON 0.00000001
 
@@ -213,7 +214,7 @@ Vector raycast_refract_vector(Vector incoming, Vector normal, double iorSrc, dou
 
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces, DblListRef iorList) {
 
-    Vector hitPos, hitPos2;
+    Vector hitPos, hitPos2, hitPosT;
     Vector hitNormal, hitNormal2;
     Vector lightRay, lightDirection, reflectionDirection, viewDirection;
     Ray recRay;
@@ -222,10 +223,13 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     Color reflectionColor = (Color) {.r=0, .g=0, .b=0};
     Color refractionColor = (Color) {.r=0, .g=0, .b=0};
     Color lightColor;
+    Color c;
     double lightDistance;
     double attenuationFactor;
     double reflectivity;
     double refractivity;
+    double remainingFactor;
+    double remainingDistance;
     bool isExiting = false, isExiting2 = false;
     int i;
 
@@ -246,15 +250,35 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                 lightDistance = vec_mag(lightRay);
                 viewDirection = vec_scale(ray.dir, -1);
                 reflectionDirection = vec_reflect(vec_scale(lightDirection, -1), hitNormal);
+                lightColor = (Color) {.r=0, .g=0, .b=0};
+                remainingFactor = 1.0;
+                remainingDistance = lightDistance;
+                hitPosT = hitPos;
 
-                // Ignore if a shadow
-                if (!raycast_intersect((Ray) {.pos=hitPos, .dir=lightDirection}, scene, lightDistance, &hitPos2,
-                                       &hitNormal2, &hitObject2, &isExiting2)) {
-                    return 0;
+                // Calculate how much light is left for the shadow
+                while (1) {
+                    if (!raycast_intersect((Ray) {.pos=hitPosT, .dir=lightDirection}, scene, remainingDistance, &hitPos2,
+                                           &hitNormal2, &hitObject2, &isExiting2)) {
+                        return 0;
+                    }
+                    if (hitPos2.x == INFINITY || hitPos2.y == INFINITY || hitPos2.z == INFINITY) {
+                        c = color_scale(scene->objects[i].color, remainingFactor);
+                        lightColor = color_blend(lightColor, c, BLEND_ADD);
+                        break;
+                    } else if (hitObject2->refractivity > 0) {
+                        hitPosT = hitPos2;
+                        c = color_scale(hitObject->color, 1-hitObject2->refractivity);
+                        lightColor = color_blend(lightColor, c, BLEND_ADD);
+                        remainingFactor *= hitObject2->refractivity;
+                        remainingDistance = vec_mag(vec_sub(scene->objects[i].pos, hitPosT));
+                    } else {
+                        lightColor = (Color) {.r=0, .g=0, .b=0};
+                        break;
+                    }
                 }
-                if (hitPos2.x != INFINITY && hitPos2.y != INFINITY && hitPos2.z != INFINITY) {
+
+                if (lightColor.r <= 0 && lightColor.g <= 0 && lightColor.b <= 0)
                     continue;
-                }
 
                 attenuationFactor = raycast_angular_attenuation(
                         scene->objects[i].data.light.angularA0,
@@ -270,7 +294,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
                         lightDistance
                 );
 
-                lightColor = color_scale(scene->objects[i].color, attenuationFactor);
+                lightColor = color_scale(lightColor, attenuationFactor);
 
                 // Calculate diffuse & specular
                 color = color_blend(color,
