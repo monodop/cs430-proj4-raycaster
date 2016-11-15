@@ -7,20 +7,22 @@
   {
     "type": "sphere",
     "diffuse_color": [1.0, 1.0, 0.01],
-    "position": [0.2, 2, 10],
-    "radius": 1,
-    "refractivity": 0.8
+    "position": [0.5, -0.2, 5],
+    "radius": 0.5,
+    "refractivity": 1,
+    "ior": 1.6,
+    "reflectivity": 0
   },
   {
     "type": "sphere",
     "diffuse_color": [0.7, 0.01, 1.0],
-    "position": [0.5, 1.5, 9.5],
+    "position": [100.5, 1.5, 9.5],
     "radius": 0.5
   },
   {
     "type": "sphere",
     "diffuse_color": [0.5, 0.01, 0.01],
-    "position": [0.2, 1.5, 9.4],
+    "position": [100.2, 1.5, 9.4],
     "radius": 0.3
   },
   {

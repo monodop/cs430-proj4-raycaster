@@ -68,7 +68,7 @@ int dbllist_remove(DblListRef list, DblListElem value) {
 }
 DblListElem dbllist_removeAt(DblListRef list, int index) {
     DblListElem out = dbllist_elem_at(list, index);
-    dbllist_shift_left(list, index, 1);
+    dbllist_shift_left(list, index + 1, 1);
     return out;
 }
 int dbllist_indexOf(DblListRef list, DblListElem value) {

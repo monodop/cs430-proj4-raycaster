@@ -176,7 +176,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->ior),
                     .kfs.d = &(object->iorKfs),
-                    .defaultValue.d = 0
+                    .defaultValue.d = 1
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_VECTOR,
@@ -239,7 +239,7 @@ int scene_get_object_metadata(SceneObjectRef object, SceneObjectMetadataRef meta
                     .canAnimate = true,
                     .value.d = &(object->ior),
                     .kfs.d = &(object->iorKfs),
-                    .defaultValue.d = 0
+                    .defaultValue.d = 1
             };
             metadata[i++] = (SceneObjectMetadata) {
                     .type = SEMT_DOUBLE,

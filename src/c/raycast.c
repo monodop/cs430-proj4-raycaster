@@ -6,6 +6,8 @@
 #include "../headers/helpers.h"
 #include "../headers/list.h"
 
+#define EPSILON 0.00000001
+
 #include <pthread.h>
 #include <unistd.h>
 
@@ -28,23 +30,24 @@ void sphere_intersect(Ray ray, Vector sphere_center, double sphere_radius, Vecto
     disc = b*b - 4*c;
 
     // No intersection if negative discriminator
-    if (disc < 0.0) {
+    if (disc < EPSILON) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
         return;
     }
     disc = sqrt(disc);
 
-    // Calcualte t-value
+    // Calculate t-value
     (*isInside) = false;
     t = (-b - disc) / 2.0;
-    if (t < 0.0) {
+    if (t < EPSILON) {
         t = (-b + disc) / 2.0;
         (*isInside) = true;
     }
 
     // No intersection if t value is negative (sphere is behind ray)
-    if (t < 0.0) {
+    if (t < EPSILON) {
+        (*isInside) = false;
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
         return;
@@ -70,7 +73,7 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
     double vd = vec_dot(u_pn, ray.dir);
 
     // Perpendicular - no intersection
-    if (fabs(vd) < 0.0001) {
+    if (fabs(vd) < EPSILON) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
         return;
@@ -82,7 +85,7 @@ void plane_intersect(Ray ray, Vector plane_center, Vector plane_normal, VectorRe
     double t = vec_dot(vec_sub(plane_center, ray.pos), u_pn) / vd;
 
     // Intersect behind origin
-    if (t < 0.0) {
+    if (t < EPSILON) {
         (*hitOut) = (Vector) { .x = INFINITY, .y = INFINITY, .z = INFINITY };
         (*distanceOut) = INFINITY;
         return;
@@ -112,7 +115,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
                 // Test sphere intersection
                 isInside2 = false;
                 sphere_intersect(ray, scene->objects[i].pos, scene->objects[i].data.sphere.radius, &hit, &distance, &isInside2);
-                if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
+                if (distance < bestDistance && distance <= maxDistance && distance >= EPSILON) {
                     bestDistance = distance;
                     bestHit = hit;
                     bestNormal = vec_unit(vec_sub(hit, scene->objects[i].pos));
@@ -125,7 +128,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
             case SCENE_OBJECT_PLANE:
                 // Test plane intersection
                 plane_intersect(ray, scene->objects[i].pos, scene->objects[i].data.plane.normal, &hit, &distance);
-                if (distance < bestDistance && distance <= maxDistance && distance >= 0.001) {
+                if (distance < bestDistance && distance <= maxDistance && distance >= EPSILON) {
                     bestDistance = distance;
                     bestHit = hit;
                     bestIsInside = false;
@@ -152,7 +155,7 @@ int raycast_intersect(Ray ray, SceneRef scene, double maxDistance, VectorRef hit
 Color raycast_calculate_diffuse(Color surfaceColor, Color lightColor, Vector surfaceNormal, Vector lightDirection) {
     double dotted = vec_dot(surfaceNormal, lightDirection);
 
-    if (dotted <= 0)
+    if (dotted <= EPSILON)
         return (Color) {.r=0,.g=0,.b=0};
 
     return color_scale(color_blend(lightColor, surfaceColor, BLEND_MULTIPLY), dotted);
@@ -162,7 +165,7 @@ Color raycast_calculate_specular(Color surfaceColor, Color lightColor, Vector su
     double dotnl = vec_dot(surfaceNormal, lightDirection);
     double dotvr = vec_dot(viewDirection, reflectionDirection);
 
-    if (dotnl <= 0 || dotvr <= 0)
+    if (dotnl <= EPSILON || dotvr <= EPSILON)
         return (Color) {.r=0,.g=0,.b=0};
 
     double f = pow(dotvr, ns);
@@ -178,7 +181,7 @@ double raycast_angular_attenuation(double aConstant, double theta, Vector lightD
         return 0;
 
     dotted = vec_dot(lightDirection, testDirection);
-    if (dotted <= 0 || cos(deg2rad(theta)) > dotted)
+    if (dotted <= EPSILON || cos(deg2rad(theta)) > dotted)
         return 0;
 
     return pow(dotted, aConstant);
@@ -205,7 +208,7 @@ Vector raycast_refract_vector(Vector incoming, Vector normal, double iorSrc, dou
     double sinTheta = (iorSrc / iorDest) * (vec_dot(incoming, b));
     double cosTheta = sqrt( 1 - (sinTheta * sinTheta));
 
-    return vec_sub(vec_scale(b, sinTheta), vec_scale(normal, cosTheta));
+    return vec_unit(vec_sub(vec_scale(b, sinTheta), vec_scale(normal, cosTheta)));
 }
 
 int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut, int maxBounces, DblListRef iorList) {
@@ -223,7 +226,7 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
     double attenuationFactor;
     double reflectivity;
     double refractivity;
-    bool isExiting, isExiting2;
+    bool isExiting = false, isExiting2 = false;
     int i;
 
     // Check for initial hit
@@ -295,8 +298,13 @@ int raycast_shoot(Ray ray, SceneRef scene, double maxDistance, ColorRef colorOut
 
         if (refractivity > 0 || isExiting) {
             recRay.pos = hitPos;
-            //recRay.dir = raycast_refract_vector(ray.dir, hitNormal, 1, 1);
-            recRay.dir = ray.dir;
+            if (isExiting) {
+                dbllist_remove(iorList, (DblListElem){.tag=hitObject, .value=hitObject->ior});
+                recRay.dir = raycast_refract_vector(ray.dir, hitNormal, hitObject->ior, dbllist_peek(iorList).value);
+            } else {
+                recRay.dir = raycast_refract_vector(ray.dir, hitNormal, dbllist_peek(iorList).value, hitObject->ior);
+                dbllist_push(iorList, (DblListElem){.tag=hitObject, .value=hitObject->ior});
+            }
             if (!raycast_shoot(recRay, scene, INFINITY, &refractionColor, maxBounces-1, iorList)) {
                 return 0;
             }
@@ -396,7 +404,7 @@ void* raycast_worker(void* arg) {
             dbllist_push(&iorList, (DblListElem) {.value=1.0, .tag=NULL}); // IOR of air
 
             // Shoot ray
-            if (!raycast_shoot(ray, scene, 100.0, &pixColor, MAX_BOUNCES, &iorList)) {
+            if (!raycast_shoot(ray, scene, INFINITY, &pixColor, MAX_BOUNCES, &iorList)) {
                 fprintf(stderr, "Error: Unable to shoot ray at x=%d, y = %d.\n", x, y);
                 return 0;
             }
