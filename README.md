@@ -1,10 +1,12 @@
-# cs430-proj3-illumination
+# cs430-proj4-raycaster
 
 Performs basic raycasting on a scene and renders the output to a PPM file. Expands on proj2 and implements basic lighting
 
 ![](/samples/4k%20spheres.png)
 
 ![](/samples/crazy.gif)
+
+![](/samples/out.gif)
 
 [Spinning Cube](http://i.imgur.com/24n8hOP.gifv)
 
@@ -35,10 +37,10 @@ Cleans and then builds raycast in the project root's /bin/ directory.
 make build
 ```
 
-#### raycast
+#### raytrace
 Builds raycast in the project root's /bin/ directory. This target will fail if the /bin/ or /obj/ directories do not exist. This target also does not clean these folders.
 ```
-make raycast
+make raytrace
 ```
 
 #### clean
@@ -49,7 +51,7 @@ make clean
 
 ## Usage
 ```
-raycast pixel_width pixel_height scene_json output_ppm
+raytrace pixel_width pixel_height scene_json output_ppm
 ```
 * pixel_width: The pixel width of the output image
 * pixel_height: The pixel height of the output image
@@ -115,8 +117,11 @@ Property | Type | Required | Default | Can Animate | Description | Example
 position | Vector3 | Yes | N/A | Yes | A point on the plane. | "position": [1.5,0,-2.0]
 normal | Vector3 | Yes | N/A | Yes | A vector that is perpendicular to the plane. This does not have to be a unit vector | "normal": [0,1,0]
 diffuse_color | Vector3 | Yes | N/A | Yes | The surface color of the plane (color components are between 0.0 amd 1.0). | "diffuse_color": [1.0,0.0,0.0]
-specular_color | Vector3 | No | [1,1,1] | Yes | The reflective color of the plane (color components are between 0.0 amd 1.0). | "specular_color": [1.0,0.0,0.0],
-"reflectivity" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "reflectivity: 10
+specular_color | Vector3 | No | [1,1,1] | Yes | The reflective color of the plane (color components are between 0.0 and 1.0). | "specular_color": [1.0,0.0,0.0],
+"ns" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "ns: 10
+"reflectivity" | Number | No | 0 | Yes | How reflective the surface is. Should be between 0 and 1, and added to the refractivity should not add up to more than 1, but this is not a strict requirement. | "reflectivity": 0.6
+"refractivity" | Number | No | 0 | Yes | How refractive the surface is - allowing light to pass through it. Should be between 0 and 1, and added to the reflectivity should not add up to more than 1, but this is not a strict requirement. | "refractivity": 0.3
+"ior" | Number | No | 1 | Yes | The index of refraction used in the material this object represents how light should bend when travelling through the material. Air has an IOR of 1, and most materials have an IOR greater than 1. | "ior": 1.3
 
 ### Sphere
 A sphere is an object that is perfectly round, and any point along the outside of a sphere is the exact same distance as any other point from the center of the sphere. The following is a table of properties that the sphere object supports
@@ -127,7 +132,10 @@ position | Vector3 | Yes | N/A | Yes | The center of the sphere. | "position": [
 radius | Number | Yes | N/A | Yes | The radius of the sphere. | "radius": 0.5
 diffuse_color | Vector3 | Yes | N/A | Yes | The surface color of the sphere (color components are between 0.0 amd 1.0). | "diffuse_color": [1.0,0.0,0.0]
 specular_color | Vector3 | No | [1,1,1] | Yes | The reflective color of the sphere (color components are between 0.0 amd 1.0). | "specular_color": [1.0,0.0,0.0],
-"reflectivity" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "reflectivity: 10
+"ns" | Number | No | 20 | Yes | How shiny the surface is. A value of 1 is not very shiny, where a high number is very shiny. | "ns: 10
+"reflectivity" | Number | No | 0 | Yes | How reflective the surface is. Should be between 0 and 1, and added to the refractivity should not add up to more than 1, but this is not a strict requirement. | "reflectivity": 0.6
+"refractivity" | Number | No | 0 | Yes | How refractive the surface is - allowing light to pass through it. Should be between 0 and 1, and added to the reflectivity should not add up to more than 1, but this is not a strict requirement. | "refractivity": 0.3
+"ior" | Number | No | 1 | Yes | The index of refraction used in the material this object represents how light should bend when travelling through the material. Air has an IOR of 1, and most materials have an IOR greater than 1. | "ior": 1.3
 
 ### Light
 There are two types of lights, but they are defined by the same type of object: point lights and spot lights. Point lights emit light in every direction equally, while spot lights point light in a specific direction. Lights are required to light up the scene
@@ -162,7 +170,7 @@ If you want something to change in your scene, simply add on a property to the r
   }
   {
     "type": "plane",
-    "color": [0, 0.6, 0],
+    "diffuse_color": [0, 0.6, 0],
     "normal": [0, 1, 0],
     "frames": [
       {
