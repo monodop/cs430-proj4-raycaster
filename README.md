@@ -7,6 +7,7 @@ Performs basic raycasting on a scene and renders the output to a PPM file. Expan
 ![](/samples/crazy.gif)
 
 ![](/samples/out.gif)
+[Lower Quality & Size](http://i.imgur.com/5t4eyia.gifv)
 
 [Spinning Cube](http://i.imgur.com/24n8hOP.gifv)
 
