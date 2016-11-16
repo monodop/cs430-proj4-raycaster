@@ -53,3 +53,5 @@ fabric.properties
 # Make build files
 /obj/
 /bin/
+
+/test_files/frames
